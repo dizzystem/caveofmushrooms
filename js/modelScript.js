@@ -221,7 +221,7 @@ var encyclopedia = {
           case "journal":
             delete ac.drop;
             ac.read = 'read("journal")';
-            ac.map = 'map()';
+            ac.map = 'showMap()';
             break;
         }
         let itemData = encyclopedia.itemData(item);

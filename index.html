@@ -1,44 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<title>The Mushroom Hunter's Encyclopedia, Third Edition</title>
-<link rel="icon" href="images/favicon.png">
-<meta charset="UTF-8">
+  <head>
+    <title>The Mushroom Hunter's Encyclopedia, Third Edition</title>
+    <link rel="icon" href="images/favicon.png">
+    <meta charset="UTF-8">
 
-<link rel="stylesheet" href="css/bootstrap.min.css">
-<script src="js/jquery-3.3.1.min.js"></script>
-<script src="js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
 
-<link rel="stylesheet" href="css/style.css">
-<script src="js/modelScript.js"></script>
-<script src="js/controllerScript.js"></script>
-<script src="js/data.js"></script>
-</head>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/modelScript.js"></script>
+    <script src="js/controllerScript.js"></script>
+    <script src="js/data.js"></script>
+  </head>
 
-<body>
-<div class="leftbar">
-<table id="minimap-cont"><tr><td><canvas id="minimap"></canvas></td><td>
-  <button onclick="zoom('+')" class="btn"><span class="glyphicon glyphicon-plus"></span></button>
-  <hr />
-  <button onclick="zoom('-')" class="btn"><span class="glyphicon glyphicon-minus"></span></button>
-</td></tr></table>
-<div id="locationDisplay"></div>
-<div id="actionDisplay"></div>
-</div>
+  <body>
+    <div class="leftbar">
+      <div id="locationDisplay"></div>
+      <div id="actionDisplay"></div>
+    </div>
 
-<div class="rightbar"><div class="tab">
-<button class="tablinks" onclick="rightTabs.openTab(event, 'inventory')">Inventory</button>
-<button class="tablinks" onclick="rightTabs.openTab(event, 'equipment')">Equipment</button>
-<button class="tablinks" onclick="rightTabs.openTab(event, 'quests')">Quests</button>
-</div>
-<div class="tabcontent" id="inventory"></div>
-<div class="tabcontent" id="equipment"></div>
-<div class="tabcontent" id="quests"></div>
-</div>
+    <div class="rightbar">
+      <div class="tab">
+        <button class="tablinks" onclick="rightTabs.openTab(event, 'inventory')">Inventory</button>
+        <button class="tablinks" onclick="rightTabs.openTab(event, 'equipment')">Equipment</button>
+        <button class="tablinks" onclick="rightTabs.openTab(event, 'quests')">Quests</button>
+      </div>
+      <div class="tabcontent" id="inventory"></div>
+      <div class="tabcontent" id="equipment"></div>
+      <div class="tabcontent" id="quests"></div>
+    </div>
 
-<div id="log" class="log"></div>
+    <div id="log" class="log"></div>
 
-<div id="modal" class="modal"></div>
+    <div id="modal" class="modal">
+      
+    </div>
 
-<script>window.onload = setup; window.onunload = function(){};</script>
-</body></html>
+    <script>
+      window.onload = setup; window.onunload = function(){};
+    </script>
+  </body>
+ </html>

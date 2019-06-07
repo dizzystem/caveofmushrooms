@@ -570,11 +570,12 @@ var popup = {
   },
   hide : function(){
     this.modal.style.display = "none";
+    // See showMap()
+    $('#modalText').removeClass('minimap');
   },
 }
 
 function drawingSetup(){
-  map.start();
   actionDisplay.start();
   locationDisplay.start();
   rightTabs.start();
@@ -659,6 +660,33 @@ function read(thing){
     log.log("journal");
   else
     log.log("error-read");
+}
+
+function showMap() {
+  var modal = document.getElementById("modal");
+  var modalContent = document.getElementById("modalText");
+  modalContent.innerHTML = 
+  "\
+    <table id=\"minimap-cont\">\
+      <tr>\
+        <td>\
+          <canvas id=\"minimap\"></canvas>\
+        </td>\
+        <td>\
+          <button onclick=\"zoom('+')\" class=\"btn\">\
+            <span class=\"glyphicon glyphicon-plus\"></span>\
+          </button>\
+          <hr>\
+          <button onclick=\"zoom('-')\" class=\"btn\">\
+            <span class=\"glyphicon glyphicon-minus\"></span>\
+           </button>\
+        </td>\
+      </tr>\
+    </table>\
+  ";
+  $('#modalText').addClass('minimap');
+  modal.style.display = 'block';
+  map.start();
 }
 
 function zoom(str){

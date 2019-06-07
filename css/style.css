@@ -119,6 +119,13 @@ a:hover {
   width: 80%;
 }
 
+/* A new class I added to allow the modal to cater to minimaps */
+.modal-content.minimap {
+  margin: 10% auto;
+  width: 370px;
+  height: 350px;
+}
+
 h3 {
   display:inline;
 }
