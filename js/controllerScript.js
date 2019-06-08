@@ -106,7 +106,6 @@ var map = {
   },
   
   redraw : function(){
-    //todo: a "hide map" button
     this.cont.style.display = '';
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     for (var i=0;i<world.hexes.length;i++){
@@ -321,6 +320,7 @@ var equipmentDisplay = {
   },
 }
 
+// (danielnyan) Possible improvements: extract entryTxt and entryTitle to external file
 var log = {
   start : function(){
     this.display = document.getElementById("log");
@@ -365,6 +365,11 @@ var log = {
         this.writeEntry(entries[i], this.entries[i].id, this.entries[i].details);
       }
     }
+  },
+  clear : function() {
+    // Might re-implement with a better method later
+    this.entries = [];
+    this.redraw();
   },
   newLog : function(before){
     var entry = document.createElement("div");
@@ -479,6 +484,9 @@ var log = {
         }
         txt += "</p>";
         return txt;
+      case "travel":
+        var hex = player.currentHex();
+        return "You've arrived at your newest destination: " + hex.getName();
     }
   },
   entryTitle : function(unique, details){
@@ -506,6 +514,8 @@ var log = {
       case "look":
         var hex = player.currentHex();
         return hex.getName();
+      case "travel":
+        return "New Location";
       default:
         return null;
     }
@@ -665,24 +675,14 @@ function read(thing){
 function showMap() {
   var modal = document.getElementById("modal");
   var modalContent = document.getElementById("modalText");
-  modalContent.innerHTML = 
-  "\
-    <table id=\"minimap-cont\">\
-      <tr>\
-        <td>\
-          <canvas id=\"minimap\"></canvas>\
-        </td>\
-        <td>\
-          <button onclick=\"zoom('+')\" class=\"btn\">\
-            <span class=\"glyphicon glyphicon-plus\"></span>\
-          </button>\
-          <hr>\
-          <button onclick=\"zoom('-')\" class=\"btn\">\
-            <span class=\"glyphicon glyphicon-minus\"></span>\
-           </button>\
-        </td>\
-      </tr>\
-    </table>\
+  // danielnyan: Stolen from dizzystem's initial minimap code from index.html
+  modalContent.innerHTML = "<table id='minimap-cont'><tr>   \
+    <td><canvas id='minimap'></canvas></td>                 \
+    <td><button onclick=\"zoom('+')\" class='btn'>          \
+      <span class='glyphicon glyphicon-plus'></span>        \
+    </button><hr><button onclick=\"zoom('-')\" class='btn'> \
+      <span class=\"glyphicon glyphicon-minus\"></span>     \
+    </button></td></tr></table>                             \
   ";
   $('#modalText').addClass('minimap');
   modal.style.display = 'block';

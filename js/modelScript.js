@@ -105,6 +105,8 @@ var player = {
         this.adjY(action.details.y);
         world.discover(this.getX(), this.getY());
         map.redraw();
+        log.clear();
+        log.log("travel");
         locationDisplay.hovering = null;
         locationDisplay.redraw();
         this.action = null;
