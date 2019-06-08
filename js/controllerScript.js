@@ -24,28 +24,28 @@ function queryNum (integer, precise){
   return integer;
 }
 function qms(array){
-  var len = array.length;
+  let len = array.length;
   if (!len) return "";
   if (len == 1) return array[0];
   return array.slice(0, len-1).join(", ")+" and "+array[len-1];
 }
 function add_a(word){
-  var letter = word[0];
+  let letter = word[0];
   if (letter == "a" || letter == "e" || letter == "i" || letter == "o" || letter == "u"){
     return "an "+word;
   }
   return "a "+word;
 }
 function sizeof(ob){
-  var size = 0;
-  for (var att in ob){
+  let size = 0;
+  for (let att in ob){
     size ++;
   }
   return size;
 }
 
 //============================Display objects=============================
-var map = {
+let map = {
   start : function(){
     this.mapZoom = 100;
     this.shown = true;
@@ -65,9 +65,9 @@ var map = {
   
   //Args are for the topmost point of the hexagon.
   drawHex : function (hx, hy){
-    var xcoord = hx - player.getX() + (hy - player.getY())/2;
-    var ycoord = (hy - player.getY()) * Math.sqrt(3)/2;
-    var hex = world.getHex(hx, hy);
+    let xcoord = hx - player.getX() + (hy - player.getY())/2;
+    let ycoord = (hy - player.getY()) * Math.sqrt(3)/2;
+    let hex = world.getHex(hx, hy);
     if (!hex){
       //Don't draw hexes that don't exist.
       return;
@@ -80,8 +80,8 @@ var map = {
     this.ctx.beginPath();
     this.ctx.moveTo(this.mapX(xcoord), this.mapY(ycoord));
     //Draw a hexagon.
-    for (var i=0;i<6;i++){
-      var deg = Math.PI/6 + i * Math.PI/3;
+    for (let i=0;i<6;i++){
+      let deg = Math.PI/6 + i * Math.PI/3;
       xcoord += Math.cos(deg) * Math.sqrt(3)/3;
       ycoord += Math.sin(deg) * Math.sqrt(3)/3;
       this.ctx.lineTo(this.mapX(xcoord), this.mapY(ycoord));
@@ -108,8 +108,8 @@ var map = {
   redraw : function(){
     this.cont.style.display = '';
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    for (var i=0;i<world.hexes.length;i++){
-      for (var j=0;j<world.hexes[0].length;j++){
+    for (let i=0;i<world.hexes.length;i++){
+      for (let j=0;j<world.hexes[0].length;j++){
         this.drawHex(j, i);
       }
     }
@@ -118,15 +118,15 @@ var map = {
   //"this" refers to the canvas because of addEventListener
   clicked : function (mouseEvent){
     //Click position.
-    var cx = mouseEvent.offsetX - this.width/2;
-    var cy = mouseEvent.offsetY - this.height/2;
+    let cx = mouseEvent.offsetX - this.width/2;
+    let cy = mouseEvent.offsetY - this.height/2;
     //Translation into hex axes.
-    var dx = cx;
-    var dy = cx/2 + cy*Math.sqrt(3)/2;
-    var dz = cx/2 - cy*Math.sqrt(3)/2;
+    let dx = cx;
+    let dy = cx/2 + cy*Math.sqrt(3)/2;
+    let dz = cx/2 - cy*Math.sqrt(3)/2;
     //Resulting movement.
-    var mx, my;
-    var dmax = Math.max(Math.abs(dx), Math.abs(dy), Math.abs(dz));
+    let mx, my;
+    let dmax = Math.max(Math.abs(dx), Math.abs(dy), Math.abs(dz));
     if (dmax/map.mapZoom < 1/2) return; //They're clicking on the current hex.
     switch(dmax){
       case Math.abs(dx):
@@ -156,16 +156,16 @@ var map = {
   }
 }
 
-var actionDisplay = {
+let actionDisplay = {
   start : function(){
     this.display = document.getElementById("actionDisplay");
   },
   redraw : function(){
-    var action = player.currentAction();
-    var txt;
+    let action = player.currentAction();
+    let txt;
     if (!action) txt = "";
     else {
-      var details = action.details;
+      let details = action.details;
       switch(action.name){
         case "travel":
           txt = "You are travelling to "+world.getHex(player.getX()+details.x, player.getY()+details.y).id+". ";
@@ -186,17 +186,17 @@ var actionDisplay = {
   },
 }
 
-var locationDisplay = {
+let locationDisplay = {
   start : function(){
     this.display = document.getElementById("locationDisplay");
     this.hovering = null;
   },
   txtFor : function(item){
-    var num = player.currentHex().i.getInv(item);
-    var data = encyclopedia.itemData(item);
-    var numword = queryNum(num);
-    var name = num>1 ? data.plu : data.sho;
-    var pos = "on the ground";
+    let num = player.currentHex().i.getInv(item);
+    let data = encyclopedia.itemData(item);
+    let numword = queryNum(num);
+    let name = num>1 ? data.plu : data.sho;
+    let pos = "on the ground";
     if (data.type == "living-mushroom"){
       numword = "some";
       if (!player.hasDiscovered(item)){
@@ -204,7 +204,7 @@ var locationDisplay = {
       }
       pos = "growing";
     }
-    var txt = "<p id='location "+item+"'>There "+(num==1 ? "is" : "are")+" "+numword+" ";
+    let txt = "<p id='location "+item+"'>There "+(num==1 ? "is" : "are")+" "+numword+" ";
     if (this.hovering == item){
       txt += name+" "+encyclopedia.actionsFor(item, data, "loc");
     } else {
@@ -214,9 +214,9 @@ var locationDisplay = {
     return txt;
   },
   redraw : function(){
-    var hex = player.currentHex();
-    var inv = hex.i.getInv();
-    var txt;
+    let hex = player.currentHex();
+    let inv = hex.i.getInv();
+    let txt;
     if (this.hovering == "hex"){
       txt = "<p><h3>"+hex.getName()+"</h3> "+encyclopedia.actionsFor(hex, null, "world")+"<p>";
     } else {
@@ -234,17 +234,17 @@ var locationDisplay = {
   },
 }
 
-var rightTabs = {
+let rightTabs = {
   start : function(){
     this.openTab(0, "inventory");
   },
   openTab : function(evt, tabName) {
-    // Declare all variables
-    var i, tabcontent, tablinks;
+    // Declare all letiables
+    let i, tabcontent, tablinks;
 
     // Get all elements with class="tabcontent" and hide them
     tabcontent = document.getElementsByClassName("tabcontent");
-    for (var i=0;i<tabcontent.length;i++) {
+    for (let i=0;i<tabcontent.length;i++) {
       tabcontent[i].style.display = "none";
     }
 
@@ -262,18 +262,18 @@ var rightTabs = {
   }
 }
 
-var inventoryDisplay = {
+let inventoryDisplay = {
   start : function(){
     this.display = document.getElementById("inventory");
     this.hovering = null;
   },
   redraw : function(){
-    var inv = player.i.getInv();
-    var txt = "";
+    let inv = player.i.getInv();
+    let txt = "";
     for (item in inv){
       if (!inv[item]) continue;
-      var data = encyclopedia.itemData(item);
-      var name = inv[item]>1 ? data.plu : data.sho;
+      let data = encyclopedia.itemData(item);
+      let name = inv[item]>1 ? data.plu : data.sho;
       txt += "<p>You have "+queryNum(inv[item])+" ";
       if (this.hovering == item){
         txt += name+" "+encyclopedia.actionsFor(item, data, "inv");
@@ -290,18 +290,18 @@ var inventoryDisplay = {
   },
 }
 
-var equipmentDisplay = {
+let equipmentDisplay = {
   start : function(){
     this.display = document.getElementById("equipment");
     this.hovering = null;
   },
   redraw : function(){
-    var equipment = player.getEquip();
-    var txt = "";
+    let equipment = player.getEquip();
+    let txt = "";
     for (slot in equipment){
-      var item = equipment[slot];
+      let item = equipment[slot];
       if (!item) continue;
-      var itemData = encyclopedia.itemData(item);
+      let itemData = encyclopedia.itemData(item);
       if (!itemData) continue;
       
       //todo: make equipment align right, using spans or something
@@ -321,7 +321,7 @@ var equipmentDisplay = {
 }
 
 // (danielnyan) Possible improvements: extract entryTxt and entryTitle to external file
-var log = {
+let log = {
   start : function(){
     this.display = document.getElementById("log");
     this.height = 0;
@@ -333,7 +333,7 @@ var log = {
     //this.entries is the stored list of unique ids that should be shown in the log
     //this function syncs the first up with the second
     let entries = this.display.children;
-    for (var i=0;i<entries.length || i<this.entries.length;i++){
+    for (let i=0;i<entries.length || i<this.entries.length;i++){
       if (this.entries.length <= i){
         this.display.removeChild(entries[i]);
         continue;
@@ -372,7 +372,7 @@ var log = {
     this.redraw();
   },
   newLog : function(before){
-    var entry = document.createElement("div");
+    let entry = document.createElement("div");
     if (before){
       this.display.insertbefore(entry, before);
     } else {
@@ -381,20 +381,21 @@ var log = {
     return entry;
   },
   entryTxt : function(unique, details){
-    var bits = unique.split("-");
-    var txt = "";
+    let bits = unique.split("-");
+    let txt = "";
+    let hex = player.currentHex();
+    let thing, buildingData;
     switch (bits[0]){
       case "build":
-        var hex = player.currentHex();
-        var name = hex.getName();
-        var canbuilds = hex.canBuild(null, true);
-        for (var i=0;i<canbuilds.length;i++){
-          var buildingData = encyclopedia.buildingData(canbuilds[i]);
+        let name = hex.getName();
+        let canbuilds = hex.canBuild(null, true);
+        for (let i=0;i<canbuilds.length;i++){
+          buildingData = encyclopedia.buildingData(canbuilds[i]);
           if (!buildingData) continue;
-          var buildingname = add_a(buildingData.sho);
-          var mats = [];
-          for (var material in buildingData.materials){
-            var itemData = encyclopedia.itemData(material);
+          let buildingname = add_a(buildingData.sho);
+          let mats = [];
+          for (let material in buildingData.materials){
+            let itemData = encyclopedia.itemData(material);
             if (!itemData) mats.push(buildingData.materials[material]+"x ??? ("+material+")");
             mats.push(buildingData.materials[material]+"x "+itemData.sho);
           }
@@ -411,20 +412,19 @@ var log = {
         }
         return txt;
       case "built":
-        var thing = bits[1];
-        var buildingData = encyclopedia.buildingData(thing);
-        var hex = player.currentHex();
+        thing = bits[1];
+        buildingData = encyclopedia.buildingData(thing);
         return "Built a <a onclick=\"enter('"+thing+"')\">"+buildingData.sho+"</a> in "+hex.getName()+".";
       case "enter":
-        var thing = bits[1];
-        var buildingData = encyclopedia.buildingData(thing);
+        thing = bits[1];
+        buildingData = encyclopedia.buildingData(thing);
         if (buildingData.recipes){
           txt += "<p>Actions:</p>";
-          var recipes = buildingData.recipes;
-          for (var name in recipes){
-            var mats = [];
-            var recipe = recipes[name];
-            for (var material in recipe.materials){
+          let recipes = buildingData.recipes;
+          for (let name in recipes){
+            let mats = [];
+            let recipe = recipes[name];
+            for (let material in recipe.materials){
               mats.push(recipe.materials[material]+" "+encyclopedia.itemData(material).sho);
             }
             if (player.i.canAfford(recipe.materials)){
@@ -450,8 +450,8 @@ var log = {
             return "That action is currently invalid.";
         }
       case "examine":
-        var thing = bits[1];
-        var data = encyclopedia.itemData(thing);
+        thing = bits[1];
+        let data = encyclopedia.itemData(thing);
         txt = "<p>"+data.lon+"</p>";
         if (details == "discover"){
           txt += "<p>You decide to name the "+data.bsho+" \""+data.sho+"\".</p>";
@@ -469,15 +469,14 @@ var log = {
         return txt;
       case "look":
         txt = "<p>"; //geographical features, eventually? also list of mushrooms
-        var hex = player.currentHex();
-        var buildings = hex.getBuilding();
-        var len = sizeof(buildings);
+        let buildings = hex.getBuilding();
+        let len = sizeof(buildings);
         if (!len) txt += "There aren't any buildings here.";
         else {
           if (len == 1) txt += "There is ";
           else txt += "There are ";
-          var buildingnames = [];
-          for (var building in buildings){
+          let buildingnames = [];
+          for (let building in buildings){
             buildingnames.push("<a onclick=\"enter('"+building+"')\">"+add_a(encyclopedia.buildingData(building).sho)+"</a>");
           }
           txt += qms(buildingnames)+" here.";
@@ -485,26 +484,27 @@ var log = {
         txt += "</p>";
         return txt;
       case "travel":
-        var hex = player.currentHex();
         return "You've arrived at your newest destination: " + hex.getName();
     }
   },
   entryTitle : function(unique, details){
-    var bits = unique.split("-");
+    let bits = unique.split("-");
+    let hex = player.currentHex();
+    let buildingData;
     switch (bits[0]){
       case "build":
-        var hex = player.currentHex();
+        hex = player.currentHex();
         return hex.getName();
       case "built":
-        var buildingData = encyclopedia.buildingData(bits[1]);
+        buildingData = encyclopedia.buildingData(bits[1]);
         return capitalize(buildingData.sho);
       case "enter":
-        var buildingData = encyclopedia.buildingData(bits[1]);
+        buildingData = encyclopedia.buildingData(bits[1]);
         return capitalize(buildingData.sho);
       case "error":
         return null;
       case "examine":
-        var data = encyclopedia.itemData(bits[1]);
+        let data = encyclopedia.itemData(bits[1]);
         if (details == "discover")
           return "Discovered: "+capitalize(data.sho);
         else
@@ -512,7 +512,7 @@ var log = {
       case "journal":
         return "Journal";
       case "look":
-        var hex = player.currentHex();
+        hex = player.currentHex();
         return hex.getName();
       case "travel":
         return "New Location";
@@ -521,12 +521,11 @@ var log = {
     }
   },
   entryHTML : function(unique, details){
-    var title = this.entryTitle(unique, details);
-    var txt = this.entryTxt(unique, details);
-    var html = "";
-      
-    var date = new Date();
-    var html = "";
+    let title = this.entryTitle(unique, details);
+    let txt = this.entryTxt(unique, details);
+    let html = "";
+    let date = new Date();
+    
     if (title){
       html += "<p><span class=\"log-title\">"+title+"</span>";
     }
@@ -542,7 +541,7 @@ var log = {
     ele.className = "log-entry";
   },
   log : function(unique, details){
-    var oldind = 999;
+    let oldind = 999;
     //Clear out old entries with the same unique id.
     this.entries = this.entries.filter(function(entry){ return entry.id != unique; });
     
@@ -560,7 +559,7 @@ var log = {
   },
 }
 
-var popup = {
+let popup = {
   start : function(){
     this.modal = document.getElementById('modal');
     this.modal.innerHTML = "<span class=\"close\" onclick=\"popup.hide()\">&times;</span>"+
@@ -604,7 +603,7 @@ function drawingSetup(){
 
 //For building new buildings.
 function build(thing){
-  var hex = player.currentHex();
+  let hex = player.currentHex();
   if (thing){
     if (hex.canBuild(thing)){
       return player.doAction(new action("build", { thing : thing }));
@@ -616,8 +615,8 @@ function build(thing){
 }
 
 function craft(thing, building){
-  var buildingData = encyclopedia.buildingData(building);
-  var recipe = buildingData.recipes[thing];
+  let buildingData = encyclopedia.buildingData(building);
+  let recipe = buildingData.recipes[thing];
   if (!player.i.canAfford(recipe.materials)){
     return log.log("error-nomaterials");
   }
@@ -673,8 +672,8 @@ function read(thing){
 }
 
 function showMap() {
-  var modal = document.getElementById("modal");
-  var modalContent = document.getElementById("modalText");
+  let modal = document.getElementById("modal");
+  let modalContent = document.getElementById("modalText");
   // danielnyan: Stolen from dizzystem's initial minimap code from index.html
   modalContent.innerHTML = "<table id='minimap-cont'><tr>   \
     <td><canvas id='minimap'></canvas></td>                 \
