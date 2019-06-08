@@ -45,8 +45,8 @@ function sizeof(ob){
 }
 
 //============================Display objects=============================
-let map = {
-  start : function(){
+const map = {
+  start(){
     // Feel free to remove the jQuery tips once you don't need them. 
     // I haven't refactored the canvas yet because it breaks the code somehow
     this.mapZoom = 100;
@@ -73,7 +73,7 @@ let map = {
   drawHex : function (hx, hy){
     let xcoord = hx - player.getX() + (hy - player.getY())/2;
     let ycoord = (hy - player.getY()) * Math.sqrt(3)/2;
-    let hex = world.getHex(hx, hy);
+    const hex = world.getHex(hx, hy);
     if (!hex){
       //Don't draw hexes that don't exist.
       return;
@@ -87,7 +87,7 @@ let map = {
     this.ctx.moveTo(this.mapX(xcoord), this.mapY(ycoord));
     //Draw a hexagon.
     for (let i=0;i<6;i++){
-      let deg = Math.PI/6 + i * Math.PI/3;
+      const deg = Math.PI/6 + i * Math.PI/3;
       xcoord += Math.cos(deg) * Math.sqrt(3)/3;
       ycoord += Math.sin(deg) * Math.sqrt(3)/3;
       this.ctx.lineTo(this.mapX(xcoord), this.mapY(ycoord));
@@ -111,8 +111,8 @@ let map = {
     this.ctx.stroke();
   },
   
-  redraw : function(){
-    // Use css property to modify style properties
+  redraw(){
+    // Use css method to modify style properties
     this.cont.css( {display:'default'} );
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     for (let i=0;i<world.hexes.length;i++){
@@ -123,17 +123,17 @@ let map = {
   },
 
   //"this" refers to the canvas because of addEventListener
-  clicked : function (mouseEvent){
+  clicked(mouseEvent){
     //Click position.
-    let cx = mouseEvent.offsetX - this.width/2;
-    let cy = mouseEvent.offsetY - this.height/2;
+    const cx = mouseEvent.offsetX - this.width/2;
+    const cy = mouseEvent.offsetY - this.height/2;
     //Translation into hex axes.
-    let dx = cx;
-    let dy = cx/2 + cy*Math.sqrt(3)/2;
-    let dz = cx/2 - cy*Math.sqrt(3)/2;
+    const dx = cx;
+    const dy = cx/2 + cy*Math.sqrt(3)/2;
+    const dz = cx/2 - cy*Math.sqrt(3)/2;
     //Resulting movement.
     let mx, my;
-    let dmax = Math.max(Math.abs(dx), Math.abs(dy), Math.abs(dz));
+    const dmax = Math.max(Math.abs(dx), Math.abs(dy), Math.abs(dz));
     if (dmax/map.mapZoom < 1/2) return; //They're clicking on the current hex.
     switch(dmax){
       case Math.abs(dx):
@@ -155,7 +155,7 @@ let map = {
     player.doAction(new action("travel", { x : mx, y : my }));
   },
   
-  zoom : function (adj){
+  zoom(adj){
     this.mapZoom += adj;
     if (this.mapZoom < 50) this.mapZoom = 50;
     if (this.mapZoom > 150) this.mapZoom = 150;
@@ -163,11 +163,11 @@ let map = {
   }
 }
 
-let actionDisplay = {
-  start : function(){
+const actionDisplay = {
+  start(){
     this.display = $("#actionDisplay");
   },
-  redraw : function(){
+  redraw(){
     let action = player.currentAction();
     let txt;
     if (!action) txt = "";
@@ -193,12 +193,12 @@ let actionDisplay = {
   },
 }
 
-let locationDisplay = {
-  start : function(){
+const locationDisplay = {
+  start(){
     this.display = $("#locationDisplay");
     this.hovering = null;
   },
-  txtFor : function(item){
+  txtFor(item){
     let num = player.currentHex().i.getInv(item);
     let data = encyclopedia.itemData(item);
     let numword = queryNum(num);
@@ -220,7 +220,7 @@ let locationDisplay = {
     txt += " "+pos+" here.</p>";
     return txt;
   },
-  redraw : function(){
+  redraw(){
     let hex = player.currentHex();
     let inv = hex.i.getInv();
     let txt;
@@ -229,24 +229,24 @@ let locationDisplay = {
     } else {
       txt = "<p><h3><a onmouseover='locationDisplay.hovered(\"hex\")'>"+hex.getName()+"</a></h3></p>";
     }
-    for (item in inv){
+    for (let item in inv){
       if (!inv[item]) continue;
       txt += this.txtFor(item);
     }
     this.display.html(txt);
   },
-  hovered : function(item){
+  hovered(item){
     this.hovering = item;
     this.redraw();
   },
 }
 
-let rightTabs = {
-  start : function(){
+const rightTabs = {
+  start(){
     this.openTab(0, "inventory");
   },
-  openTab : function(evt, tabName) {
-    // Declare all letiables
+  openTab(evt, tabName) {
+    // Declare all variables
     let i, tabcontent, tablinks;
 
     // Get all elements with class="tabcontent" and hide them
@@ -257,52 +257,58 @@ let rightTabs = {
 
     // Show the current tab, and add an "active" class to the button that opened the tab
     $('#' + tabName).css({display : "block"}).addClass("active");
-    
-    /* Legacy code below:
-    document.getElementById(tabName).style.display = "block";
-    if (evt){
-      evt.currentTarget.className += " active";
-    }*/
   }
 }
 
-let inventoryDisplay = {
-  start : function(){
+const inventoryDisplay = {
+  start(){
     this.display = $("#inventory");
     this.hovering = null;
   },
-  redraw : function(){
-    let inv = player.i.getInv();
-    let txt = "";
-    for (item in inv){
+  redraw(){
+    // (danielnyan) Can optimise by only redrawing the elements 
+    // that have changed, instead of redrawing everything.
+    this.display.empty();
+    const inv = player.i.getInv();
+    for (let item in inv) {
       if (!inv[item]) continue;
-      let data = encyclopedia.itemData(item);
-      let name = inv[item]>1 ? data.plu : data.sho;
-      txt += "<p>You have "+queryNum(inv[item])+" ";
-      if (this.hovering == item){
-        txt += name+" "+encyclopedia.actionsFor(item, data, "inv");
+      const data = encyclopedia.itemData(item);
+      const name = inv[item]>1 ? data.plu : data.sho;
+      
+      // jQuery shorthand for creating new document object <p>
+      const textObject = $("<p></p>").html("You have "+queryNum(inv[item]) + " ");
+      
+      // Gets current html with textObject.html(), then adds more html depending 
+      // on whether the object you're hovering over is this current item.
+      if (this.hovering == item) {
+        // Appends the possible actions for the item
+        const actionsHtml = encyclopedia.actionsFor(item, data, "inv")
+        textObject.html(textObject.html() + name + " " + actionsHtml);
       } else {
-        txt += "<a onmouseover='inventoryDisplay.hovered(\""+item+"\")'>"+name+"</a>";
+        const link = $("<a></a>").html(name);
+        // Shorthand for addEventListener('mouseover', () => {})
+        link.mouseover(() => inventoryDisplay.hovered(item));
+        textObject.append(link);
       }
-      txt += ".</p>";
+      // append is jQuery for appendChild
+      this.display.append(textObject);
     }
-    this.display.html(txt);
   },
-  hovered : function(item){
+  hovered(item){
     this.hovering = item;
     this.redraw();
   },
 }
 
-let equipmentDisplay = {
-  start : function(){
+const equipmentDisplay = {
+  start(){
     this.display = $("#equipment");
     this.hovering = null;
   },
-  redraw : function(){
+  redraw(){
     let equipment = player.getEquip();
     let txt = "";
-    for (slot in equipment){
+    for (let slot in equipment){
       let item = equipment[slot];
       if (!item) continue;
       let itemData = encyclopedia.itemData(item);
@@ -318,64 +324,27 @@ let equipmentDisplay = {
     }
     this.display.html(txt);
   },
-  hovered : function(item){
+  hovered(item){
     this.hovering = item;
     this.redraw();
   },
 }
 
 // (danielnyan) Possible improvements: extract entryTxt and entryTitle to external file
-let log = {
-  start : function(){
-    this.display = document.getElementById("log");
+const log = {
+  start(){
+    this.display = $("#log");
     this.height = 0;
     this.unread = 0;
-    this.entries = [];
   },
-  redraw : function(){
-    //entries is the actual list of html nodes in the html log
-    //this.entries is the stored list of unique ids that should be shown in the log
-    //this function syncs the first up with the second
-    let entries = this.display.children;
-    for (let i=0;i<entries.length || i<this.entries.length;i++){
-      if (this.entries.length <= i){
-        this.display.removeChild(entries[i]);
-        continue;
-      } else if (entries.length <= i){
-        this.newLog();
-        entries = this.display.children;
-      }
-      
-      if (entries[i].id != this.entries[i]){
-        if (entries.length > i+1 && 
-            entries[i+1].id == this.entries[i].id){
-          //Insertion in entries wrt this.entries.
-          this.display.removeChild(entries[i]);
-          entries = this.display.children;
-        } else if (this.entries.length > i+1 && 
-            this.entries[i+1].id == entries[i].id){
-          //Deletion in entries wrt this.entries.
-          this.writeEntry(this.newLog(entries[i]), this.entries[i].id, this.entries[i].details);
-          entries = this.display.children;
-        } else {
-          //Default write to entry, in non-insertion/nondeletion cases.
-          this.writeEntry(entries[i], this.entries[i].id, this.entries[i].details);
-        }
-        continue;
-      }
-      
-      if (this.entries.length == i+1){
-        //This is the last entry.  Always rewrite.
-        this.writeEntry(entries[i], this.entries[i].id, this.entries[i].details);
-      }
-    }
-  },
-  clear : function() {
+  clear() {
     // Might re-implement with a better method later
-    this.entries = [];
-    this.redraw();
+    this.display.empty();
+    this.height = document.documentElement.scrollTop;
+    this.unread = 0;
   },
-  newLog : function(before){
+  newLog(before){
+    // Might deprecate because the logic is mostly implemented in log
     let entry = document.createElement("div");
     if (before){
       this.display.insertbefore(entry, before);
@@ -384,7 +353,7 @@ let log = {
     }
     return entry;
   },
-  entryTxt : function(unique, details){
+  entryTxt(unique, details){
     let bits = unique.split("-");
     let txt = "";
     let hex = player.currentHex();
@@ -491,7 +460,7 @@ let log = {
         return "You've arrived at your newest destination: " + hex.getName();
     }
   },
-  entryTitle : function(unique, details){
+  entryTitle(unique, details){
     let bits = unique.split("-");
     let hex = player.currentHex();
     let buildingData;
@@ -524,7 +493,7 @@ let log = {
         return null;
     }
   },
-  entryHTML : function(unique, details){
+  entryHTML(unique, details){
     let title = this.entryTitle(unique, details);
     let txt = this.entryTxt(unique, details);
     let html = "";
@@ -539,23 +508,28 @@ let log = {
     html += txt;
     return html;
   },
-  writeEntry : function(ele, unique, details){
-    ele.innerHTML = this.entryHTML(unique, details);
-    ele.id = unique;
-    ele.className = "log-entry";
-  },
-  log : function(unique, details){
-    let oldind = 999;
-    //Clear out old entries with the same unique id.
-    this.entries = this.entries.filter(function(entry){ return entry.id != unique; });
+  log(unique, details){
+    let newEntry = $("#" + unique);
+    // Clear out old entries with the same unique ID
+    if (newEntry) {
+      newEntry.remove();
+    }
+    newEntry = $("<div></div>").html(this.entryHTML(unique, details));
+    // You can't set id and class directly with jQuery. But, you can 
+    // expose the DOM element using newEntry[0] and then set the id.
+    newEntry.prop({id : unique, class : "log-entry"});
+    this.display.append(newEntry);
     
-    this.entries.push({ id : unique, details : details });
-    this.redraw();
-    //todo: maybe a subtle animation when an entry is redrawn
+    // To do: add subtle animation
     
+    //Only autoscroll if they're already at the bottom.
     if (document.documentElement.scrollTop >= this.height){
-      //Only autoscroll if they're already at the bottom.
-      this.display.lastChild.scrollIntoView();
+      // The selector below selects all div elements that are direct 
+      // children of #log, and last() selects the last child. 
+      const lastElement = $("#log > div").last();
+      $("html, body").animate({
+        scrollTop: lastElement.offset().top
+      });
       this.height = document.documentElement.scrollTop;
     } else {
       this.unread++;
@@ -563,8 +537,8 @@ let log = {
   },
 }
 
-let popup = {
-  start : function(){
+const popup = {
+  start(){
     this.modal = document.getElementById('modal');
     this.modal.innerHTML = "<span class=\"close\" onclick=\"popup.hide()\">&times;</span>"+
       "<div id=\"modalText\" class=\"modal-content\"></div>";
@@ -577,13 +551,26 @@ let popup = {
       }
     }
   },
-  show : function(txt){
+  show(txt){
     this.display.innerHTML = txt;
     this.modal.style.display = "block";
   },
-  hide : function(){
+  showMap() {
+    // danielnyan: Stolen from dizzystem's initial minimap code from index.html
+    this.display.innerHTML = "<table id='minimap-cont'><tr>   \
+      <td><canvas id='minimap'></canvas></td>                 \
+      <td><button onclick=\"zoom('+')\" class='btn'>          \
+        <span class='glyphicon glyphicon-plus'></span>        \
+      </button><hr><button onclick=\"zoom('-')\" class='btn'> \
+        <span class=\"glyphicon glyphicon-minus\"></span>     \
+      </button></td></tr></table>                             \
+    ";
+    $('#modalText').addClass('minimap');
+    modal.style.display = 'block';
+    map.start();
+  },
+  hide() {
     this.modal.style.display = "none";
-    // See showMap()
     $('#modalText').removeClass('minimap');
   },
 }
@@ -676,20 +663,7 @@ function read(thing){
 }
 
 function showMap() {
-  let modal = document.getElementById("modal");
-  let modalContent = document.getElementById("modalText");
-  // danielnyan: Stolen from dizzystem's initial minimap code from index.html
-  modalContent.innerHTML = "<table id='minimap-cont'><tr>   \
-    <td><canvas id='minimap'></canvas></td>                 \
-    <td><button onclick=\"zoom('+')\" class='btn'>          \
-      <span class='glyphicon glyphicon-plus'></span>        \
-    </button><hr><button onclick=\"zoom('-')\" class='btn'> \
-      <span class=\"glyphicon glyphicon-minus\"></span>     \
-    </button></td></tr></table>                             \
-  ";
-  $('#modalText').addClass('minimap');
-  modal.style.display = 'block';
-  map.start();
+  popup.showMap();
 }
 
 function zoom(str){
