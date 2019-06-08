@@ -47,10 +47,16 @@ function sizeof(ob){
 //============================Display objects=============================
 let map = {
   start : function(){
+    // Feel free to remove the jQuery tips once you don't need them. 
+    // I haven't refactored the canvas yet because it breaks the code somehow
     this.mapZoom = 100;
     this.shown = true;
-    this.canvas = document.getElementById("minimap");
-    this.cont = document.getElementById("minimap-cont");
+    
+    // Shorthand for getElementById
+    this.cont = $("#minimap-cont");
+    // You can access the DOM element itself using numerical indexing
+    this.canvas = $("#minimap")[0];
+    
     this.canvas.width = 300;
     this.canvas.height = 300;
     this.ctx = this.canvas.getContext("2d");
@@ -106,7 +112,8 @@ let map = {
   },
   
   redraw : function(){
-    this.cont.style.display = '';
+    // Use css property to modify style properties
+    this.cont.css( {display:'default'} );
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     for (let i=0;i<world.hexes.length;i++){
       for (let j=0;j<world.hexes[0].length;j++){
@@ -158,7 +165,7 @@ let map = {
 
 let actionDisplay = {
   start : function(){
-    this.display = document.getElementById("actionDisplay");
+    this.display = $("#actionDisplay");
   },
   redraw : function(){
     let action = player.currentAction();
@@ -182,13 +189,13 @@ let actionDisplay = {
       }
       txt += "("+Math.ceil(action.timer/10)+")";
     }
-    this.display.innerHTML = txt;
+    this.display.html(txt);
   },
 }
 
 let locationDisplay = {
   start : function(){
-    this.display = document.getElementById("locationDisplay");
+    this.display = $("#locationDisplay");
     this.hovering = null;
   },
   txtFor : function(item){
@@ -226,7 +233,7 @@ let locationDisplay = {
       if (!inv[item]) continue;
       txt += this.txtFor(item);
     }
-    this.display.innerHTML = txt;
+    this.display.html(txt);
   },
   hovered : function(item){
     this.hovering = item;
@@ -243,28 +250,25 @@ let rightTabs = {
     let i, tabcontent, tablinks;
 
     // Get all elements with class="tabcontent" and hide them
-    tabcontent = document.getElementsByClassName("tabcontent");
-    for (let i=0;i<tabcontent.length;i++) {
-      tabcontent[i].style.display = "none";
-    }
+    $(".tabcontent").css({display: 'none'})
 
     // Get all elements with class="tablinks" and remove the class "active"
-    tablinks = document.getElementsByClassName("tablinks");
-    for (i=0;i<tablinks.length;i++) {
-      tablinks[i].className = tablinks[i].className.replace(" active", "");
-    }
+    $(".tablinks").removeClass("active");
 
     // Show the current tab, and add an "active" class to the button that opened the tab
+    $('#' + tabName).css({display : "block"}).addClass("active");
+    
+    /* Legacy code below:
     document.getElementById(tabName).style.display = "block";
     if (evt){
       evt.currentTarget.className += " active";
-    }
+    }*/
   }
 }
 
 let inventoryDisplay = {
   start : function(){
-    this.display = document.getElementById("inventory");
+    this.display = $("#inventory");
     this.hovering = null;
   },
   redraw : function(){
@@ -282,7 +286,7 @@ let inventoryDisplay = {
       }
       txt += ".</p>";
     }
-    this.display.innerHTML = txt;
+    this.display.html(txt);
   },
   hovered : function(item){
     this.hovering = item;
@@ -292,7 +296,7 @@ let inventoryDisplay = {
 
 let equipmentDisplay = {
   start : function(){
-    this.display = document.getElementById("equipment");
+    this.display = $("#equipment");
     this.hovering = null;
   },
   redraw : function(){
@@ -312,7 +316,7 @@ let equipmentDisplay = {
         txt += "<p>"+capitalize(slot)+": <a onmouseover='equipmentDisplay.hovered(\""+slot+"\")'>"+itemData.sho+"</a></p>";
       }
     }
-    this.display.innerHTML = txt;
+    this.display.html(txt);
   },
   hovered : function(item){
     this.hovering = item;
