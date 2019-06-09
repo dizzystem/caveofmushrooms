@@ -510,7 +510,7 @@ const log = {
     return html;
   },
   log(unique, details){
-    const existingEntry = $("#" + unique);
+    const existingEntry = $("[id=" + unique+"]");
     // Clear out old entries with the same unique ID
     if (existingEntry) {
       existingEntry.hide(400, () => existingEntry.remove());
