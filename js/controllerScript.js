@@ -290,6 +290,7 @@ const inventoryDisplay = {
         link.mouseover(() => inventoryDisplay.hovered(item));
         textObject.append(link);
       }
+      textObject.append(".");
       // append is jQuery for appendChild
       this.display.append(textObject);
     }
