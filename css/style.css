@@ -85,6 +85,11 @@ a:hover {
   vertical-align: text-bottom;
 }
 
+.log-entry.new-entry {
+  box-shadow: 0 0 10px aqua;
+  border: 1px solid aqua;
+}
+
 .log-title {
   color: #aaa;
   font-size: 15px;

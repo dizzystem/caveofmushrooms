@@ -509,31 +509,39 @@ const log = {
     return html;
   },
   log(unique, details){
-    let newEntry = $("#" + unique);
+    const existingEntry = $("#" + unique);
     // Clear out old entries with the same unique ID
-    if (newEntry) {
-      newEntry.remove();
+    if (existingEntry) {
+      existingEntry.hide(400, () => existingEntry.remove());
     }
-    newEntry = $("<div></div>").html(this.entryHTML(unique, details));
+    const newEntry = $("<div></div>").html(this.entryHTML(unique, details));
     // You can't set id and class directly with jQuery. But, you can 
     // expose the DOM element using newEntry[0] and then set the id.
     newEntry.prop({id : unique, class : "log-entry"});
     this.display.append(newEntry);
     
-    // To do: add subtle animation
+    // (not so) subtle animation
+    // In jQuery, you can define your own custom events like how I'm doing here
+    // This one only fires when the class and css are added.
+    newEntry.on("new-entry-class-added", () => {
+      newEntry.removeClass("new-entry");
+    });
+    
+    newEntry.addClass("new-entry")
+    newEntry.css({transition: "border 0.8s, box-shadow 0.8s"});
+    // To do: fix race condition. There may be cases where 100ms may not be enough
+    setTimeout(() => newEntry.trigger("new-entry-class-added"), 100);
     
     //Only autoscroll if they're already at the bottom.
-    if (document.documentElement.scrollTop >= this.height){
-      // The selector below selects all div elements that are direct 
-      // children of #log, and last() selects the last child. 
-      const lastElement = $("#log > div").last();
+    if ($(window).height() + $(document).scrollTop() >= this.height){
       $("html, body").animate({
-        scrollTop: lastElement.offset().top
+        scrollTop: $(document).height()
       });
-      this.height = document.documentElement.scrollTop;
+      this.unread = 0;
     } else {
       this.unread++;
     }
+    this.height = $(document).height();
   },
 }
 
