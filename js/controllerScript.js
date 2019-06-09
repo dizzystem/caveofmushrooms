@@ -513,7 +513,7 @@ const log = {
     const existingEntry = $("[id=" + unique+"]");
     // Clear out old entries with the same unique ID
     if (existingEntry) {
-      existingEntry.hide(400, () => existingEntry.remove());
+      existingEntry.hide(400, () => log.removeEntry(existingEntry));
     }
     const newEntry = $("<div></div>").html(this.entryHTML(unique, details));
     // You can't set id and class directly with jQuery. But, you can 
@@ -534,7 +534,7 @@ const log = {
     setTimeout(() => newEntry.trigger("new-entry-class-added"), 100);
     
     //Only autoscroll if they're already at the bottom.
-    if ($(window).height() + $(document).scrollTop() >= this.height){
+    if ($(window).height() + $(document).scrollTop() >= this.height - 10){
       $("html, body").animate({
         scrollTop: $(document).height()
       });
@@ -543,6 +543,13 @@ const log = {
       this.unread++;
     }
     this.height = $(document).height();
+  },
+  removeEntry(entry){
+    entry.remove();
+    //When a log entry is removed, the height of the log may shrink.
+    //This makes sure that the recorded height of the log doesn't go over the actual height of the log.
+    if (this.height > $(document).height())
+      this.height = $(document).height();
   },
 }
 
