@@ -458,7 +458,7 @@ const log = {
         txt += "</p>";
         return txt;
       case "travel":
-        return "You've arrived at your newest destination: " + hex.getName();
+        return "You've arrived at your newest destination: " + hex.getName() + ".";
     }
   },
   entryTitle(unique, details){
@@ -537,7 +537,7 @@ const log = {
     if ($(window).height() + $(document).scrollTop() >= this.height - 10){
       $("html, body").animate({
         scrollTop: $(document).height()
-      });
+      }, 1000);
       this.unread = 0;
     } else {
       this.unread++;
