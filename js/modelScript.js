@@ -1,17 +1,18 @@
-var world = {
+let world = {
   hexes : [],
   start : function(){
     //Initialize hexes.
-    for (var i=0;i<20;i++){
+    for (let i=0;i<20;i++){
       this.hexes[i] = [];
-      for (var j=0;j<20;j++){
-        var data = encyclopedia.hexData(j, i);
+      for (let j=0;j<20;j++){
+        let data = encyclopedia.hexData(j, i);
         if (!data){
           this.hexes[i][j] = null;
           continue;
         }
         this.hexes[i][j] = new hex('ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i]+("0"+j).slice(-2), j, i);
         this.hexes[i][j].name = data.name;
+        this.hexes[i][j].canEnter = data.canEnter;
         this.hexes[i][j].addMushrooms(data.mushrooms);
         if (data.colour) this.hexes[i][j].colour = data.colour;
         else this.hexes[i][j].colour = "#222222";
@@ -20,7 +21,7 @@ var world = {
   },
   tick : function(){
     /*
-    for (var i=0;i<this.hexes.length;i++){
+    for (let i=0;i<this.hexes.length;i++){
       this.hexes[i].tick();
     }
     */
@@ -41,9 +42,10 @@ var world = {
   }
 }
 
-var player = {
+let player = {
   start : function(){
-    this.x = this.y = 1;
+    this.x = 1;
+    this.y = 2;
     this.action = null;
     this.discovered = [];
     this.currentHex().discovered = true; //Delete this when we implement crafting; make them craft a map for it.
@@ -99,6 +101,7 @@ var player = {
     actionDisplay.redraw();
   },
   completeAction : function(action){
+    let thing, buildingData;
     switch(action.name){
       case "travel":
         this.adjX(action.details.x);
@@ -112,7 +115,7 @@ var player = {
         this.action = null;
       break;
       case "gather":
-        var thing = action.details.thing;
+        thing = action.details.thing;
         
         this.i.adjInv("picked"+thing, 1);
         inventoryDisplay.redraw();
@@ -122,10 +125,10 @@ var player = {
         }
       break;
       case "build":
-        var thing = action.details.thing;
-        var buildingData = encyclopedia.buildingData(thing);
-        var materials = buildingData.materials;
-        var hex = this.currentHex();
+        thing = action.details.thing;
+        buildingData = encyclopedia.buildingData(thing);
+        let materials = buildingData.materials;
+        let hex = this.currentHex();
         
         if (!player.i.canAfford(materials)){
           this.action = null;
@@ -138,8 +141,8 @@ var player = {
         this.action = null;
       break;
       case "craft":
-        var buildingData = encyclopedia.buildingData(action.details.building);
-        var recipe = buildingData.recipes[action.details.thing];
+        buildingData = encyclopedia.buildingData(action.details.building);
+        let recipe = buildingData.recipes[action.details.thing];
         if (!player.i.canAfford(recipe.materials)){
           this.action = null;
           break;
@@ -177,13 +180,13 @@ var player = {
   },
 }
 
-var encyclopedia = {
+let encyclopedia = {
   items : {},
   recipes : {},
   start : function(){
   },
   itemData : function(thing){
-    var data = this.items[thing];
+    let data = this.items[thing];
     if (!data) return {};
     if (!data.plu && data.sho){
       data.plu = pluralize(data.sho);
@@ -200,7 +203,7 @@ var encyclopedia = {
     return this.hexes["h"+x+"_"+y];
   },
   actionsFor : function(item, data, where){
-    var ac = {};
+    let ac = {};
     switch(where){
       case "world":
         ac.look = 'look()';
@@ -233,7 +236,7 @@ var encyclopedia = {
       break;
     }
     
-    var bits = [];
+    let bits = [];
     for (a in ac){
       bits.push("<a onclick='"+ac[a]+"'>"+a+"</a>");
     }
@@ -258,7 +261,7 @@ function container(name, startinv){
     if (this.inventory[item] == 0) delete this.inventory[item];
   }
   this.canAfford = function(materials){
-    for (var material in materials){
+    for (let material in materials){
       if (this.getInv(material) < materials[material]){
         return false;
       }
@@ -266,12 +269,12 @@ function container(name, startinv){
     return true;
   }
   this.award = function(materials){
-    for (var material in materials){
+    for (let material in materials){
       this.adjInv(material, materials[material]);
     }
   }
   this.pay = function(materials){
-    for (var material in materials){
+    for (let material in materials){
       this.adjInv(material, -materials[material]);
     }
   }
@@ -293,7 +296,7 @@ function hex(id, x, y){
     if (this.name) return this.name;
     return this.id;
   }
-  var encyc = encyclopedia[x+"_"+y];
+  let encyc = encyclopedia[x+"_"+y];
   if (encyc){
     this.name = encyc.name;
   }
@@ -308,7 +311,7 @@ function hex(id, x, y){
   }
   this.canBuild = function(build, nearly){
     if (!build){
-      var canbuilds = [];
+      let canbuilds = [];
       for (let build2 in encyclopedia.buildings){
         if (this.canBuild(build2, nearly)){
           canbuilds.push(build2);
@@ -316,7 +319,7 @@ function hex(id, x, y){
       }
       return canbuilds;
     }
-    var buildData = encyclopedia.buildingData(build);
+    let buildData = encyclopedia.buildingData(build);
     if (this.buildings[build]){
       //Already exists.
       return false;
@@ -331,8 +334,8 @@ function hex(id, x, y){
       return true;
     } else if (!nearly) return false;
     
-    var mats = 0;
-    for (var material in buildData.materials){
+    let mats = 0;
+    for (let material in buildData.materials){
       if (player.i.getInv(material)){
         mats ++;
       }
@@ -342,7 +345,7 @@ function hex(id, x, y){
     else return false;
   }
   this.addMushrooms = function(mushrooms){
-    for (var i=0;i<mushrooms.length;i++){
+    for (let i=0;i<mushrooms.length;i++){
       this.i.adjInv(mushrooms[i], 5);
     }
   }

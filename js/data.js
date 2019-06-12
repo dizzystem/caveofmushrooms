@@ -333,12 +333,12 @@ encyclopedia.buildings = {
         difficulty : 0,
         timer : 5,
       },
-      "poolcap boat" : {
+      "raft" : {
         materials : {
           pickedpoolcap : 10,
           rope : 5, //glue?
         },
-        products : { "poolcap boat" : 1 },
+        products : { "raft" : 1 },
       },
     }
   },
@@ -347,16 +347,37 @@ encyclopedia.buildings = {
     materials : {
       silverstackPlank : 50,
     },
-    recipes : {
-      blueleafResearch : {
+    research : {
+      "firestarting" : {
+        desc : "How do I start fires without a lighter?",
         materials : {
           pickedblueleaf : 10,
         },
-        products : { },
         difficulty : 0,
         timer : 5,
-      },
+      }
     },
+  },
+}
+
+encyclopedia.enter = {
+  needsTorch : function(){
+    for (let item in ["torch", "lantern"]){
+      if (player.i.getInv(item) > 0){
+        return true;
+      }
+    }
+    log.log("error-needitem-light");
+    return false;
+  },
+  needsBoat : function(){
+    for (let item in ["raft"]){
+      if (player.i.getInv(item) > 0){
+        return true;
+      }
+    }
+    log.log("error-needitem-boat");
+    return false;
   },
 }
 
@@ -370,16 +391,15 @@ encyclopedia.hexes = {
   
   //Zone 1
   h1_1 : {
+    mushrooms : [],
+  },
+  h1_2 : {
     name : "Sun's Landing",
     mushrooms : [ "blueleaf", "poolcap" ],
     colour : "#AAAAAA",
   },
-  h1_2 : {
-    mushrooms : [ "stonerose" ],
-    colour : "#8888AA",
-  },
   h0_3 : {
-    mushrooms : [ "zestnub" ],
+    mushrooms : [ "stonerose", "zestnub" ],
     colour : "#B5B26A",
   },
   h1_3 : {
@@ -392,10 +412,16 @@ encyclopedia.hexes = {
   
   //Zone 2
   h3_2 : {
+    name : "Flooded Lake",
     mushrooms : [],
+    canEnter : encyclopedia.enter.needsBoat,
+    colour : "#8888AA",
   },
   h4_2 : {
+    name : "Flooded Lake",
     mushrooms : [],
+    canEnter : encyclopedia.enter.needsBoat,
+    colour : "#8888AA",
   },
   
   //Zone 3

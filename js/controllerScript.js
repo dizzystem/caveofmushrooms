@@ -149,7 +149,12 @@ const map = {
         my = dz > 0 ? -1 : 1;
       break;
     }
-    if (!world.getHex(player.getX()+mx, player.getY()+my)){
+    const hex = world.getHex(player.getX()+mx, player.getY()+my);
+    if (!hex){
+      return;
+    }
+    if (hex.canEnter && !hex.canEnter()){
+      popup.hide();
       return;
     }
     player.doAction(new action("travel", { x : mx, y : my }));
@@ -420,6 +425,20 @@ const log = {
             return "That building is not here.";
           case "read":
             return "You can't read that.";
+          case "needitem":
+            if (bits.length < 2){
+              return "You don't have the necessary equipment to go this way.";
+            }
+            const item = bits[2];
+            switch(item){
+              case "boat":
+                return "This part of the cave is flooded with dark, murky water. It's too deep to wade through - you'll need a boat of some sort.";
+              case "light":
+                return "The further reaches of this cave are filled with almost total darkness. You'll need a way to light it up.";
+              default:
+                const itemData = encyclopedia.itemData(item);
+                return "You need a "+itemData.sho+" to go this way.";
+            }
           default:
             return "That action is currently invalid.";
         }
