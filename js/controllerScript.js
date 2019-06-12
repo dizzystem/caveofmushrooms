@@ -15,10 +15,10 @@ function capitalize(str){
   return str.replace(/\b\w/g, function(l){ return l.toUpperCase() });
 }
 function queryNum (integer, precise){
-  if (integer == 0){
+  if (integer === 0){
     return "no";
   }
-  if (integer == 1){
+  if (integer === 1){
     return "a";
   }
   return integer;
@@ -26,12 +26,12 @@ function queryNum (integer, precise){
 function qms(array){
   let len = array.length;
   if (!len) return "";
-  if (len == 1) return array[0];
+  if (len === 1) return array[0];
   return array.slice(0, len-1).join(", ")+" and "+array[len-1];
 }
 function add_a(word){
   let letter = word[0];
-  if (letter == "a" || letter == "e" || letter == "i" || letter == "o" || letter == "u"){
+  if (letter === "a" || letter === "e" || letter === "i" || letter === "o" || letter === "u"){
     return "an "+word;
   }
   return "a "+word;
@@ -97,7 +97,7 @@ const map = {
       this.ctx.fillStyle = hex.colour;
       this.ctx.fill();
       this.ctx.font = (this.mapZoom/5)+"px Arial";
-      if (hx == player.getX() && hy == player.getY()){
+      if (hx === player.getX() && hy === player.getY()){
         //Colour the one you're on.
         this.ctx.fillStyle = "#FFFF33";
       } else {
@@ -209,15 +209,15 @@ const locationDisplay = {
     let numword = queryNum(num);
     let name = num>1 ? data.plu : data.sho;
     let pos = "on the ground";
-    if (data.type == "living-mushroom"){
+    if (data.type === "living-mushroom"){
       numword = "some";
       if (!player.hasDiscovered(item)){
         name = num>1 ? data.bplu : data.bsho;
       }
       pos = "growing";
     }
-    let txt = "<p id='location "+item+"'>There "+(num==1 ? "is" : "are")+" "+numword+" ";
-    if (this.hovering == item){
+    let txt = "<p id='location "+item+"'>There "+(num===1 ? "is" : "are")+" "+numword+" ";
+    if (this.hovering === item){
       txt += name+" "+encyclopedia.actionsFor(item, data, "loc");
     } else {
       txt += "<a onmouseover='locationDisplay.hovered(\""+item+"\")'>"+name+"</a>";
@@ -229,7 +229,7 @@ const locationDisplay = {
     let hex = player.currentHex();
     let inv = hex.i.getInv();
     let txt;
-    if (this.hovering == "hex"){
+    if (this.hovering === "hex"){
       txt = "<p><h3>"+hex.getName()+"</h3> "+encyclopedia.actionsFor(hex, null, "world")+"<p>";
     } else {
       txt = "<p><h3><a onmouseover='locationDisplay.hovered(\"hex\")'>"+hex.getName()+"</a></h3></p>";
@@ -268,36 +268,40 @@ const rightTabs = {
 const inventoryDisplay = {
   start(){
     this.display = $("#inventory");
+    this.equipDisplay = $("#inventory-equip");
+    this.itemDisplay = $("#inventory-item");
     this.hovering = null;
   },
   redraw(){
     // (danielnyan) Can optimise by only redrawing the elements 
     // that have changed, instead of redrawing everything.
-    this.display.empty();
+    
+    // This also empties the contents
+    this.equipDisplay.html("<h4>Equipment</h4>");
+    this.itemDisplay.html("<h4>Items</h4>");
+    
     const inv = player.i.getInv();
     for (let item in inv) {
       if (!inv[item]) continue;
       const data = encyclopedia.itemData(item);
       const name = inv[item]>1 ? data.plu : data.sho;
-      
-      // jQuery shorthand for creating new document object <p>
       const textObject = $("<p></p>").html("You have "+queryNum(inv[item]) + " ");
-      
-      // Gets current html with textObject.html(), then adds more html depending 
-      // on whether the object you're hovering over is this current item.
-      if (this.hovering == item) {
-        // Appends the possible actions for the item
+      if (this.hovering === item) {
         const actionsHtml = encyclopedia.actionsFor(item, data, "inv")
         textObject.html(textObject.html() + name + " " + actionsHtml);
       } else {
         const link = $("<a></a>").html(name);
-        // Shorthand for addEventListener('mouseover', () => {})
         link.mouseover(() => inventoryDisplay.hovered(item));
         textObject.append(link);
       }
       textObject.append(".");
-      // append is jQuery for appendChild
-      this.display.append(textObject);
+      
+      const itemData = encyclopedia.itemData(item);
+      if (itemData && itemData.type && itemData.type.includes("equipment")) {
+        this.equipDisplay.append(textObject);
+      } else {
+        this.itemDisplay.append(textObject);
+      }
     }
   },
   hovered(item){
@@ -322,7 +326,7 @@ const equipmentDisplay = {
       
       //todo: make equipment align right, using spans or something
       //more todo: make equipped items be placed first in inventory with a tag
-      if (this.hovering == slot){
+      if (this.hovering === slot){
         txt += "<p>"+capitalize(slot)+": "+itemData.sho+" (<a onclick='remove(\""+slot+"\")'>remove</a>)</p>";
       } else {
         txt += "<p>"+capitalize(slot)+": <a onmouseover='equipmentDisplay.hovered(\""+slot+"\")'>"+itemData.sho+"</a></p>";
@@ -446,7 +450,7 @@ const log = {
         thing = bits[1];
         let data = encyclopedia.itemData(thing);
         txt = "<p>"+data.lon+"</p>";
-        if (details == "discover"){
+        if (details === "discover"){
           txt += "<p>You decide to name the "+data.bsho+" \""+data.sho+"\".</p>";
         }
         return txt;
@@ -466,7 +470,7 @@ const log = {
         let len = sizeof(buildings);
         if (!len) txt += "There aren't any buildings here.";
         else {
-          if (len == 1) txt += "There is ";
+          if (len === 1) txt += "There is ";
           else txt += "There are ";
           let buildingnames = [];
           for (let building in buildings){
@@ -498,7 +502,7 @@ const log = {
         return null;
       case "examine":
         let data = encyclopedia.itemData(bits[1]);
-        if (details == "discover")
+        if (details === "discover")
           return "Discovered: "+capitalize(data.sho);
         else
           return capitalize(data.sho);
@@ -581,7 +585,7 @@ const popup = {
     
     //When the user clicks anywhere outside of the modal, close it
     window.onclick = function(event) {
-      if (event.target == this.modal) {
+      if (event.target === this.modal) {
         popup.hide();
       }
     }
@@ -667,12 +671,16 @@ function enter(thing){
 }
 
 function examine(where, thing){
-  if (where == "loc" && player.discover(thing)){
+  if (where === "loc" && player.discover(thing)){
     log.log("examine-"+thing, "discover");
     locationDisplay.redraw();
   } else {
     log.log("examine-"+thing);
   }
+}
+
+function equip(thing) {
+  
 }
 
 function gather(thing){
@@ -691,10 +699,18 @@ function look(){
 }
 
 function read(thing){
-  if (thing == "journal")
+  if (thing === "journal")
     log.log("journal");
   else
     log.log("error-read");
+}
+
+function remove(thing) {
+  const removedItem = player.getEquip(thing);
+  player.i.adjInv(removedItem, 1);
+  player.setEquip(thing, null);
+  inventoryDisplay.redraw();
+  equipmentDisplay.redraw();
 }
 
 function showMap() {

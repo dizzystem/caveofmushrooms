@@ -82,7 +82,7 @@ let player = {
   },
   discover : function(item){
     if (encyclopedia.itemData(item) && 
-        encyclopedia.itemData(item).type == "living-mushroom" && 
+        encyclopedia.itemData(item).type === "living-mushroom" && 
         !this.discovered.includes(item)){
       this.discovered.push(item);
       return true;
@@ -211,7 +211,7 @@ let encyclopedia = {
       break;
       case "loc":
         ac.examine = 'examine("'+where+'","'+item+'")';
-        if (data.type == "living-mushroom"){
+        if (data.type === "living-mushroom"){
           if (player.hasDiscovered(item)){
             ac.gather = 'gather("'+item+'")';
           }
@@ -230,7 +230,7 @@ let encyclopedia = {
             break;
         }
         let itemData = encyclopedia.itemData(item);
-        if (itemData.type == "picked-mushroom"){
+        if (itemData.type === "picked-mushroom"){
           ac.eat = 'eat("'+item+'")';
         }
       break;
@@ -258,7 +258,7 @@ function container(name, startinv){
   this.adjInv = function(item, amount){
     if (!this.inventory[item]) this.inventory[item] = 0;
     this.inventory[item] += amount;
-    if (this.inventory[item] == 0) delete this.inventory[item];
+    if (this.inventory[item] === 0) delete this.inventory[item];
   }
   this.canAfford = function(materials){
     for (let material in materials){
