@@ -220,16 +220,20 @@ let encyclopedia = {
         }
       break;
       case "inv":
+        let itemData = encyclopedia.itemData(item);
         ac.examine = 'examine("'+where+'","'+item+'")';
+        if (itemData.type.includes("equipment")) {
+          ac.equip = 'equip("'+item+'")';
+        }
         ac.drop = 'drop("'+item+'")';
         switch(item){
           case "journal":
             delete ac.drop;
+            delete ac.equip;
             ac.read = 'read("journal")';
             ac.map = 'showMap()';
             break;
         }
-        let itemData = encyclopedia.itemData(item);
         if (itemData.type === "picked-mushroom"){
           ac.eat = 'eat("'+item+'")';
         }

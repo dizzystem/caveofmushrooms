@@ -171,11 +171,16 @@ const map = {
 const actionDisplay = {
   start(){
     this.display = $("#actionDisplay");
+    this.progressBackground = $("#progressBackground");
+    this.progressBar = $("#progressBar");
   },
   redraw(){
     let action = player.currentAction();
     let txt;
-    if (!action) txt = "";
+    if (!action) {
+      txt = "";
+      this.progressBackground.css({display:"none"});
+    }
     else {
       let details = action.details;
       switch(action.name){
@@ -193,6 +198,9 @@ const actionDisplay = {
         break;
       }
       txt += "("+Math.ceil(action.timer/10)+")";
+      this.progressBackground.css({display:"block"});
+      const progress = 100 - action.timer / player.getActionTimer(action) * 100;
+      this.progressBar.css({width:progress + "%"});
     }
     this.display.html(txt);
   },
@@ -670,6 +678,27 @@ function enter(thing){
   log.log("enter-"+thing);
 }
 
+function equip(thing) {
+  const type = encyclopedia.itemData(thing).type;
+  if (!type) {
+    return;
+  }
+  const keywords = type.split("-");
+  if (!keywords || keywords.length !== 2 || keywords[0] !== "equipment") {
+    return;
+  }
+  const slot = keywords[1];
+  const existingEquip = player.getEquip(slot);
+  if (existingEquip) {
+    player.i.adjInv(existingEquip, 1);
+    player.setEquip(slot, null);
+  }
+  player.i.adjInv(thing, -1);
+  player.setEquip(slot, thing);
+  inventoryDisplay.redraw();
+  equipmentDisplay.redraw();
+}
+
 function examine(where, thing){
   if (where === "loc" && player.discover(thing)){
     log.log("examine-"+thing, "discover");
@@ -677,10 +706,6 @@ function examine(where, thing){
   } else {
     log.log("examine-"+thing);
   }
-}
-
-function equip(thing) {
-  
 }
 
 function gather(thing){
