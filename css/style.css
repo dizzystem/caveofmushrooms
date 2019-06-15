@@ -134,3 +134,16 @@ a:hover {
 h3 {
   display:inline;
 }
+
+#progressBackground {
+  width: 100%;
+  height: 10px;
+  background-color: grey;
+  display: none;
+}
+
+#progressBar {
+  width: 1%;
+  height: 10px;
+  background-color: cyan;
+}
