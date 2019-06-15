@@ -355,6 +355,7 @@ encyclopedia.buildings = {
         },
         difficulty : 0,
         timer : 5,
+        limit : 1,
       }
     },
   },

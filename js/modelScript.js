@@ -65,6 +65,7 @@ let player = {
       food : null,
       drink : null,
     }
+    this.researched = {};
   },
   getX : function(){ return this.x; },
   getY : function(){ return this.y; },
@@ -155,6 +156,24 @@ let player = {
           break;
         }
       break;
+      case "research":
+        buildingData = encyclopedia.buildingData(action.details.building);
+        let research = buildingData.research[action.details.thing];
+        if (!player.i.canAfford(research.materials)){
+          this.action = null;
+          break;
+        }
+        player.i.pay(research.materials);
+        inventoryDisplay.redraw();
+        player.researched[action.details.thing] ++;
+        if (player.researched[action.details.thing] >= research.limit){
+          this.action = null;
+          break;
+        }
+        if (!player.i.canAfford(research.materials)){
+          this.action = null;
+          break;
+        }
     }
     if (action){
       action.timer = this.getActionTimer(action);
