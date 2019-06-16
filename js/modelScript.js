@@ -97,6 +97,8 @@ let player = {
         return 10 * fps;
       case "build":
         return 10 * fps;
+      case "gather":
+        return 10 * fps / playerStats.gatherSpeed;
     }
     return 1 * fps; //1 second, for debugging
   },
@@ -192,6 +194,26 @@ let player = {
   },
   setEquip : function(slot, equip){
     if (this.equipment.hasOwnProperty(slot)) this.equipment[slot] = equip;
+    this.recalculateStats();
+  },
+  recalculateStats : function(){
+    playerStats = {gatherSpeed : 1, researchSpeed : 1, craftSpeed : 1};
+    for (let slot in this.equipment) {
+      if (!this.getEquip(slot)) {
+        continue;
+      }
+      const equipmentData = encyclopedia.itemData(this.getEquip(slot));
+      const statData = equipmentData.stats;
+      if (!statData) {
+        continue;
+      }
+      for (let stat in statData) {
+        if (!playerStats[stat]) {
+          playerStats[stat] = 0;
+        }
+        playerStats[stat] += statData[stat];
+      }
+    }
   },
   tick : function(){
     if (this.action){
@@ -203,6 +225,9 @@ let player = {
       actionDisplay.redraw();
     }
   },
+}
+
+let playerStats = {
 }
 
 let encyclopedia = {
@@ -393,6 +418,7 @@ function setup(){
   fps = 10;
   world.start();
   player.start();
+  player.recalculateStats();
   drawingSetup();
   setInterval(tick, 100);
 }
