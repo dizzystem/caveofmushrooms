@@ -345,7 +345,7 @@ encyclopedia.buildings = {
   writingDesk : {
     sho : "writing desk",
     materials : {
-      silverstackPlank : 50,
+      pickedpoolcap : 10,
     },
     research : {
       "firestarting" : {

@@ -93,6 +93,10 @@ let player = {
   getActionTimer : function(action){
     switch(action.name){
       //Different actions should have different timers, based on equipment and buffs and terrain.
+      case "research":
+        return 10 * fps;
+      case "build":
+        return 10 * fps;
     }
     return 1 * fps; //1 second, for debugging
   },
@@ -165,6 +169,8 @@ let player = {
         }
         player.i.pay(research.materials);
         inventoryDisplay.redraw();
+        if (!player.researched[action.details.thing])
+          player.researched[action.details.thing] = 0;
         player.researched[action.details.thing] ++;
         if (player.researched[action.details.thing] >= research.limit){
           this.action = null;

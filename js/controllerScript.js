@@ -196,6 +196,9 @@ const actionDisplay = {
         case "craft":
           txt = "You are crafting "+details.thing+". ";
         break;
+        case "research":
+          txt = "You are researching "+details.thing+". ";
+        break;
       }
       txt += "("+Math.ceil(action.timer/10)+")";
       this.progressBackground.css({display:"block"});
@@ -410,7 +413,7 @@ const log = {
         thing = bits[1];
         buildingData = encyclopedia.buildingData(thing);
         if (buildingData.recipes){
-          txt += "<p>Actions:</p>";
+          txt += "<p>You can craft:</p>";
           let recipes = buildingData.recipes;
           for (let name in recipes){
             let mats = [];
@@ -425,12 +428,30 @@ const log = {
             }
           }
         }
+        if (buildingData.research){
+          txt += "<p>You can research:</p>";
+          let research = buildingData.research;
+          for (let name in research){
+            let mats = [];
+            let recipe = research[name];
+            for (let material in recipe.materials){
+              mats.push(recipe.materials[material]+" "+encyclopedia.itemData(material).sho);
+            }
+            if (player.i.canAfford(recipe.materials)){
+              txt += "<p><a onclick=\"research('"+name+"','"+thing+"')\">"+name+"</a> ("+qms(mats)+")</p>";
+            } else {
+              txt += "<p>"+name+" ("+qms(mats)+")</p>";
+            }
+          }
+        }
         //todo: make sheds for storage
         return txt;
       case "error":
         switch(bits.length > 1 ? bits[1] : null){
-          case "nomaterials":
+          case "nomaterialstocraft":
             return "You do not have the materials to craft this item.";
+          case "nomaterialstoresearch":
+            return "You do not have the materials to perform this research.";
           case "oldbuild":
             return "You can't build that here.";
           case "oldenter":
@@ -471,6 +492,13 @@ const log = {
           txt += ".</p>";
         } else
           txt += "You haven't discovered any mushrooms yet.</p>";
+        if (Object.keys(player.researched).length){
+          txt += "You've researched these topics: "+qms(Object.keys(player.researched).map(function(topic){
+              return player.researched[topic] == 1 ? topic : topic+" ("+player.researched[topic]+")"
+            }))
+          txt += ".</p>";
+        } else
+          txt += "You haven't completed any research yet.</p>";
         return txt;
       case "look":
         txt = "<p>"; //geographical features, eventually? also list of mushrooms
@@ -656,9 +684,18 @@ function craft(thing, building){
   let buildingData = encyclopedia.buildingData(building);
   let recipe = buildingData.recipes[thing];
   if (!player.i.canAfford(recipe.materials)){
-    return log.log("error-nomaterials");
+    return log.log("error-nomaterialstocraft");
   }
   return player.doAction(new action("craft", { thing : thing, building : building }));
+}
+
+function research(thing, building){
+  let buildingData = encyclopedia.buildingData(building);
+  let research = buildingData.research[thing];
+  if (!player.i.canAfford(research.materials)){
+    return log.log("error-nomaterialstoresearch");
+  }
+  return player.doAction(new action("research", { thing : thing, building : building }));
 }
 
 //Todo: Implement "drop multi" and "drop all"
