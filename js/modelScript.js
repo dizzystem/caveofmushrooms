@@ -53,6 +53,8 @@ let player = {
       mushroomKnife : 1,
       pickedblueleaf : 20,
       journal : 1,
+      wisdomSandwich : 5,
+      vigourShroom : 5
     });
     this.journal = {
       map : true,
@@ -66,6 +68,7 @@ let player = {
       drink : null,
     }
     this.researched = {};
+    this.consumed = {};
   },
   getX : function(){ return this.x; },
   getY : function(){ return this.y; },
@@ -94,9 +97,9 @@ let player = {
     switch(action.name){
       //Different actions should have different timers, based on equipment and buffs and terrain.
       case "research":
-        return 10 * fps;
+        return 10 * fps / playerStats.researchSpeed;
       case "build":
-        return 10 * fps;
+        return 10 * fps / playerStats.buildSpeed;
       case "gather":
         return 10 * fps / playerStats.gatherSpeed;
     }
@@ -197,13 +200,25 @@ let player = {
     this.recalculateStats();
   },
   recalculateStats : function(){
-    playerStats = {gatherSpeed : 1, researchSpeed : 1, craftSpeed : 1};
+    playerStats = {gatherSpeed : 1, researchSpeed : 1, craftSpeed : 1, buildSpeed : 1};
+    const itemNames = [];
+    // Add in equipment for processing
     for (let slot in this.equipment) {
       if (!this.getEquip(slot)) {
         continue;
       }
-      const equipmentData = encyclopedia.itemData(this.getEquip(slot));
-      const statData = equipmentData.stats;
+      itemNames.push(this.getEquip(slot));
+    }
+    // Add in consumables
+    for (let food in this.consumed) {
+      itemNames.push(food);
+    }
+    for (let itemName of itemNames) {
+      const itemData = encyclopedia.itemData(itemName);
+      if (!itemData) {
+        continue;
+      }
+      const statData = itemData.stats;
       if (!statData) {
         continue;
       }
@@ -223,6 +238,17 @@ let player = {
         this.completeAction(this.action);
       }
       actionDisplay.redraw();
+    }
+    let buffExpired = false;
+    for (let food of Object.keys(this.consumed)) {
+      this.consumed[food]--;
+      if (this.consumed[food] <= 0) {
+        delete this.consumed[food];
+        buffExpired = true;
+      }
+    }
+    if (buffExpired) {
+      this.recalculateStats();
     }
   },
 }
@@ -284,7 +310,7 @@ let encyclopedia = {
             ac.map = 'showMap()';
             break;
         }
-        if (itemData.type === "picked-mushroom"){
+        if (itemData.type === "picked-mushroom" || itemData.type === "food"){
           ac.eat = 'eat("'+item+'")';
         }
       break;
