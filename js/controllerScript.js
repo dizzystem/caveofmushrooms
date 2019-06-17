@@ -422,9 +422,9 @@ const log = {
               mats.push(recipe.materials[material]+" "+encyclopedia.itemData(material).sho);
             }
             if (player.i.canAfford(recipe.materials)){
-              txt += "<p><a onclick=\"craft('"+name+"','"+thing+"')\">"+name+"</a> ("+qms(mats)+")</p>";
+              txt += "<p><a onclick=\"craft('"+name+"','"+thing+"')\">"+name+"</a> ("+qms(mats)+")<br>"+recipe.desc+"</p>";
             } else {
-              txt += "<p>"+name+" ("+qms(mats)+")</p>";
+              txt += "<p>"+name+" ("+qms(mats)+")<br>"+recipe.desc+"</p>";
             }
           }
         }
@@ -438,9 +438,9 @@ const log = {
               mats.push(recipe.materials[material]+" "+encyclopedia.itemData(material).sho);
             }
             if (player.i.canAfford(recipe.materials)){
-              txt += "<p><a onclick=\"research('"+name+"','"+thing+"')\">"+name+"</a> ("+qms(mats)+")</p>";
+              txt += "<p><a onclick=\"research('"+name+"','"+thing+"')\">"+name+"</a> ("+qms(mats)+")<br>"+research.desc+"</p>";
             } else {
-              txt += "<p>"+name+" ("+qms(mats)+")</p>";
+              txt += "<p>"+name+" ("+qms(mats)+")<br>"+research.desc+"</p>";
             }
           }
         }

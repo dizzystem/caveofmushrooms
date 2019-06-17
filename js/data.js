@@ -231,7 +231,7 @@ encyclopedia.items = {
   blueleafTea : {
     type : "food",
     sho : "blueleaf tea",
-    lon : "Some delicious blue tea, served in a poolcap.",
+    lon : "Some delicious blue tea, served in a poolcap.  It can stain your teeth blue.",
   },
   
   
@@ -245,20 +245,28 @@ encyclopedia.buildings = {
     },
     durability : 50,
     recipes : {
-      "blueleaf ink" : { 
-        materials : { pickedblueleaf : 5, },
-        products : { blueleafInk : 1, },
-      },
       "blueleaf tea" : { 
+        desc : "Make some tea by boiling blueleaf mushrooms in water.",
         materials : {
-          pickedblueleaf : 1,
+          pickedblueleaf : 2,
           pickedpoolcap : 1,
         },
         products : { blueleafTea : 1, },
       },
+      "blueleaf ink" : {
+        desc : "Make some ink by distilling this tea.",
+        materials : {
+          blueleafTea : 5,
+          pickedpoolcap : 1,
+        },
+        products : { blueleafInk : 1, },
+      },
     },
   },
-  choppingBoard : {
+  //make a reinforced poolcap as structural material
+  //grind holegrain in reinforced poolcap
+  //a way to reshape poolcap
+  /*choppingBoard : {
     sho : "chopping board",
     materials : {
       pickedblueleaf : 10,
@@ -301,7 +309,7 @@ encyclopedia.buildings = {
         products : { poolcapCap : 1, },
       },
     },
-  },
+  },*/
   toolBench : {
     sho : "tool bench",
     materials : {
@@ -348,6 +356,15 @@ encyclopedia.buildings = {
       pickedpoolcap : 10,
     },
     research : {
+      "map" : {
+        desc : "Draw a map of this cave, so I can keep track of where I've explored.",
+        materials : {
+          blueleafInk : 10,
+        },
+        difficulty : 0,
+        timer : 5,
+        limit : 1,
+      },
       "firestarting" : {
         desc : "How do I start fires without a lighter?",
         materials : {
@@ -356,7 +373,7 @@ encyclopedia.buildings = {
         difficulty : 0,
         timer : 5,
         limit : 1,
-      }
+      },
     },
   },
 }
