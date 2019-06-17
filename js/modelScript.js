@@ -107,6 +107,16 @@ let player = {
   },
   currentAction : function(){ return this.action; },
   doAction : function(action){
+    console.log(action);
+    console.log(this.action);
+    if (this.action) {
+      if (action.name === this.action.name && 
+        objectsEqual(action.details, this.action.details)) {
+        {
+          return;
+        }
+      }
+    }
     this.action = action;
     actionDisplay.redraw();
   },

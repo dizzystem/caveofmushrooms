@@ -44,6 +44,21 @@ function sizeof(ob){
   return size;
 }
 
+//===========================Helper functions=============================
+function objectsEqual(a, b) {
+  let aProps = Object.getOwnPropertyNames(a);
+  let bProps = Object.getOwnPropertyNames(b);
+  if (aProps.length != bProps.length) {
+    return false;
+  }
+  for (let propName of aProps) {
+    if (a[propName] !== b[propName]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 //============================Display objects=============================
 const map = {
   start(){
