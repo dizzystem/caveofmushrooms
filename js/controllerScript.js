@@ -202,7 +202,12 @@ const actionDisplay = {
       }
       txt += "("+Math.ceil(action.timer/10)+")";
       this.progressBackground.css({display:"block"});
-      const progress = 100 - action.timer / player.getActionTimer(action) * 100;
+      let progress = 100 - action.timer / player.getActionTimer(action) * 100;
+      if (progress > 100) {
+        progress = 100;
+      } else if (progress < 0) {
+        progress = 0;
+      }
       this.progressBar.css({width:progress + "%"});
     }
     this.display.html(txt);
@@ -704,6 +709,23 @@ function drop(thing){
     locationDisplay.redraw();
     inventoryDisplay.redraw();
   }
+}
+
+function eat(thing) {
+  const itemData = encyclopedia.itemData(thing)
+  if (!itemData) {
+    return;
+  }
+  const type = itemData.type;
+  if (!type || type !== "food") {
+    return;
+  }
+  if (itemData.duration) {
+    player.consumed[thing] = itemData.duration * fps;
+    player.recalculateStats();
+  }
+  player.i.adjInv(thing, -1);
+  inventoryDisplay.redraw();
 }
 
 //For entering building menus.

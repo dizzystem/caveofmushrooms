@@ -215,6 +215,7 @@ encyclopedia.items = {
     type : "equipment-tool",
     sho : "mushroom knife",
     lon : "This is a curved knife used for gathering mushrooms.",
+    stats : {gatherSpeed : 9}
   },
   blueleafHat : {
     type : "equipment-hat",
@@ -233,8 +234,21 @@ encyclopedia.items = {
     sho : "blueleaf tea",
     lon : "Some delicious blue tea, served in a poolcap.  It can stain your teeth blue.",
   },
-  
-  
+  // Currently item bonuses don't stack, but instead, they refresh. Upcoming feature?
+  wisdomSandwich : {
+    type : "food",
+    sho : "wisdom sandwich",
+    lon : "A sandwich that grants increased construction speed. This is a testing item, so if you have it, chances are that you're hacking.",
+    duration : 10,
+    stats : {buildSpeed : 9}
+  },
+  vigourShroom : {
+    type : "food",
+    sho : "vigour mushroom",
+    lon : "A testing item that's thrown in solely for testing the effects of multiple buffs. It also boosts your gathering speed insanely, but that's not important.",
+    duration : 5,
+    stats : {gatherSpeed : 99}
+  }
 }
 
 encyclopedia.buildings = {
