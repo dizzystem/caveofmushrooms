@@ -215,9 +215,10 @@ const actionDisplay = {
           txt = "You are researching "+details.thing+". ";
         break;
       }
-      txt += "("+Math.ceil(action.timer/10)+")";
+      const actionTimer = (action.required - action.progress) / player.actionSpeed;
+      txt += "("+Math.ceil(actionTimer/10)+")";
       this.progressBackground.css({display:"block"});
-      let progress = 100 - action.timer / player.getActionTimer(action) * 100;
+      let progress = action.progress / action.required * 100;
       if (progress > 100) {
         progress = 100;
       } else if (progress < 0) {

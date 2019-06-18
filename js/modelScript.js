@@ -47,6 +47,7 @@ let player = {
     this.x = 1;
     this.y = 2;
     this.action = null;
+    this.actionSpeed = 0;
     this.discovered = [];
     this.currentHex().discovered = true; //Delete this when we implement crafting; make them craft a map for it.
     this.i = new container("inv", {
@@ -93,22 +94,20 @@ let player = {
     }
     return false;
   },
-  getActionTimer : function(action){
-    switch(action.name){
+  getActionSpeed : function(){
+    switch(this.action.name){
       //Different actions should have different timers, based on equipment and buffs and terrain.
       case "research":
-        return 10 * fps / playerStats.researchSpeed;
+        return playerStats.researchSpeed;
       case "build":
-        return 10 * fps / playerStats.buildSpeed;
+        return playerStats.buildSpeed;
       case "gather":
-        return 10 * fps / playerStats.gatherSpeed;
+        return playerStats.gatherSpeed;
     }
-    return 1 * fps; //1 second, for debugging
+    return 1;
   },
   currentAction : function(){ return this.action; },
   doAction : function(action){
-    console.log(action);
-    console.log(this.action);
     if (this.action) {
       if (action.name === this.action.name && 
         objectsEqual(action.details, this.action.details)) {
@@ -118,6 +117,7 @@ let player = {
       }
     }
     this.action = action;
+    this.actionSpeed = this.getActionSpeed();
     actionDisplay.redraw();
   },
   completeAction : function(action){
@@ -197,7 +197,7 @@ let player = {
         }
     }
     if (action){
-      action.timer = this.getActionTimer(action);
+      action.progress = 0;
     }
   },
   getEquip : function(slot){
@@ -239,16 +239,21 @@ let player = {
         playerStats[stat] += statData[stat];
       }
     }
+    if (this.action) {
+      this.actionSpeed = this.getActionSpeed();
+    }
   },
   tick : function(){
+    // Increases the progress of actions
     if (this.action){
-      if (this.action.timer > 0){
-        this.action.timer --;
+      if (this.action.progress < this.action.required){
+        this.action.progress += this.actionSpeed;
       } else {
         this.completeAction(this.action);
       }
       actionDisplay.redraw();
     }
+    // Decreases the time remaining for buffs
     let buffExpired = false;
     for (let food of Object.keys(this.consumed)) {
       this.consumed[food]--;
@@ -447,7 +452,48 @@ function hex(id, x, y){
 function action(name, details){
   this.name = name;
   this.details = details;
-  this.timer = player.getActionTimer(this);
+  this.progress = 0;
+  this.required = fps;
+  // Extracts the timer from the encyclopedia
+  switch (name) {
+    case "gather":
+      this.required *= 10;
+      break;
+    case "build": {
+      let timer = encyclopedia.buildingData(details.thing).timer;
+      if (!timer) {
+        timer = 10;
+      }
+      this.required *= timer; 
+      break;
+    }
+    case "craft": {
+      const buildingData = encyclopedia.buildingData(building);
+      const recipe = buildingData.recipes[thing];
+      let timer = recipe.timer;
+      if (!timer) {
+        timer = 10;
+      }
+      this.required *= timer;
+      break;
+    }
+    case "research": {
+      const buildingData = encyclopedia.buildingData(building);
+      const recipe = buildingData.research[thing];
+      let timer = recipe.timer;
+      if (!timer) {
+        timer = 10;
+      }
+      this.required *= timer;
+      break;
+    }
+    case "travel": {
+      break;
+    }
+    default:
+      break;
+  }
+  console.log(this.required);
 }
 
 function setup(){

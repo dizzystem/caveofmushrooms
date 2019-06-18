@@ -247,7 +247,7 @@ encyclopedia.items = {
     sho : "vigour mushroom",
     lon : "A testing item that's thrown in solely for testing the effects of multiple buffs. It also boosts your gathering speed insanely, but that's not important.",
     duration : 5,
-    stats : {gatherSpeed : 99}
+    stats : {gatherSpeed : 999}
   }
 }
 
@@ -276,6 +276,7 @@ encyclopedia.buildings = {
         products : { blueleafInk : 1, },
       },
     },
+    timer: 30,
   },
   //make a reinforced poolcap as structural material
   //grind holegrain in reinforced poolcap
