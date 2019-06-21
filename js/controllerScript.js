@@ -791,6 +791,12 @@ function get(thing){
   if (world.moveItem(thing, player.currentHex().i, player.i, 1)){
     locationDisplay.redraw();
     inventoryDisplay.redraw();
+    let itemInfo = encyclopedia.itemData(thing);
+    if (itemInfo && itemInfo.type === "equipment-tool") {
+      if (!player.durability.hasOwnProperty(thing)) {
+        player.durability[thing] = itemInfo.durability;
+      }
+    }
   }
 }
 

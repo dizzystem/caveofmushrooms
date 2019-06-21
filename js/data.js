@@ -215,7 +215,8 @@ encyclopedia.items = {
     type : "equipment-tool",
     sho : "mushroom knife",
     lon : "This is a curved knife used for gathering mushrooms.",
-    stats : {gatherSpeed : 9}
+    stats : {gatherSpeed : 9},
+    durability : 5000,
   },
   blueleafHat : {
     type : "equipment-hat",

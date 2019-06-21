@@ -55,11 +55,14 @@ let player = {
       pickedblueleaf : 20,
       journal : 1,
       wisdomSandwich : 5,
-      vigourShroom : 5
+      vigourShroom : 5,
     });
+    this.durability = {
+      mushroomKnife : 50,
+    };
     this.journal = {
       map : true,
-    }
+    };
     this.equipment = {
       tool : "mushroomKnife",
       hat : "blueleafHat",
@@ -67,7 +70,7 @@ let player = {
       shoes : null,
       food : null,
       drink : null,
-    }
+    };
     this.researched = {};
     this.consumed = {};
   },
@@ -214,7 +217,9 @@ let player = {
     const itemNames = [];
     // Add in equipment for processing
     for (let slot in this.equipment) {
-      if (!this.getEquip(slot)) {
+      let equip = this.getEquip(slot);
+      let isBroken = this.durability.hasOwnProperty(equip) && (this.durability[equip] <= 0);
+      if (!equip || isBroken) {
         continue;
       }
       itemNames.push(this.getEquip(slot));
@@ -233,7 +238,7 @@ let player = {
         continue;
       }
       for (let stat in statData) {
-        if (!playerStats[stat]) {
+        if (!playerStats.hasOwnProperty(stat)) {
           playerStats[stat] = 0;
         }
         playerStats[stat] += statData[stat];
@@ -243,6 +248,24 @@ let player = {
       this.actionSpeed = this.getActionSpeed();
     }
   },
+  handleDurability : function() {
+    if (!this.equipment["tool"] || this.durability[this.equipment["tool"]] <= 0) {
+      return;
+    }
+    if (this.action) {
+      if (this.action.name == "gather") {
+        this.durability[this.equipment["tool"]]--;
+        if (this.durability[this.equipment["tool"]] <= 0) {
+          this.recalculateStats();
+        }
+      }
+    }
+  },
+  repairItem : function(thing) {
+    let itemInfo = encyclopedia.itemData(thing);
+    player.durability[thing] = itemInfo.durability;
+    recalculateStats();
+  },
   tick : function(){
     // Increases the progress of actions
     if (this.action){
@@ -251,6 +274,7 @@ let player = {
       } else {
         this.completeAction(this.action);
       }
+      this.handleDurability();
       actionDisplay.redraw();
     }
     // Decreases the time remaining for buffs
@@ -493,7 +517,6 @@ function action(name, details){
     default:
       break;
   }
-  console.log(this.required);
 }
 
 function setup(){
