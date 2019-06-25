@@ -44,6 +44,21 @@ function sizeof(ob){
   return size;
 }
 
+//===========================Helper functions=============================
+function objectsEqual(a, b) {
+  let aProps = Object.getOwnPropertyNames(a);
+  let bProps = Object.getOwnPropertyNames(b);
+  if (aProps.length != bProps.length) {
+    return false;
+  }
+  for (let propName of aProps) {
+    if (a[propName] !== b[propName]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 //============================Display objects=============================
 const map = {
   start(){
@@ -200,9 +215,10 @@ const actionDisplay = {
           txt = "You are researching "+details.thing+". ";
         break;
       }
-      txt += "("+Math.ceil(action.timer/10)+")";
+      const actionTimer = (action.required - action.progress) / player.actionSpeed;
+      txt += "("+Math.ceil(actionTimer/10)+")";
       this.progressBackground.css({display:"block"});
-      let progress = 100 - action.timer / player.getActionTimer(action) * 100;
+      let progress = action.progress / action.required * 100;
       if (progress > 100) {
         progress = 100;
       } else if (progress < 0) {
@@ -775,6 +791,12 @@ function get(thing){
   if (world.moveItem(thing, player.currentHex().i, player.i, 1)){
     locationDisplay.redraw();
     inventoryDisplay.redraw();
+    let itemInfo = encyclopedia.itemData(thing);
+    if (itemInfo && itemInfo.type === "equipment-tool") {
+      if (!player.durability.hasOwnProperty(thing)) {
+        player.durability[thing] = itemInfo.durability;
+      }
+    }
   }
 }
 

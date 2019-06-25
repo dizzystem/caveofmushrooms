@@ -215,7 +215,8 @@ encyclopedia.items = {
     type : "equipment-tool",
     sho : "mushroom knife",
     lon : "This is a curved knife used for gathering mushrooms.",
-    stats : {gatherSpeed : 9}
+    stats : {gatherSpeed : 9},
+    durability : 5000,
   },
   blueleafHat : {
     type : "equipment-hat",
@@ -247,7 +248,7 @@ encyclopedia.items = {
     sho : "moongill powder",
     lon : "A pale white powder that tingles strongly to the touch.  When swallowed, it gives a short burst of manic energy.",
     duration : 5,
-    stats : {gatherSpeed : 99}
+    stats : {gatherSpeed : 999}
   }
 }
 
@@ -285,6 +286,7 @@ encyclopedia.buildings = {
         timer : 5,
       },
     },
+    timer: 30,
   },
   //make a reinforced poolcap as structural material
   //grind holegrain in reinforced poolcap
