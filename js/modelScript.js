@@ -54,7 +54,7 @@ let player = {
       pickedblueleaf : 20,
       journal : 1,
       wisdomSandwich : 5,
-      vigourShroom : 5
+      moongillPowder : 5
     });
     this.journal = {
       map : true,

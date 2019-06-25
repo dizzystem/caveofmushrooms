@@ -242,10 +242,10 @@ encyclopedia.items = {
     duration : 10,
     stats : {buildSpeed : 9}
   },
-  vigourShroom : {
+  moongillPowder : {
     type : "food",
-    sho : "vigour mushroom",
-    lon : "A testing item that's thrown in solely for testing the effects of multiple buffs. It also boosts your gathering speed insanely, but that's not important.",
+    sho : "moongill powder",
+    lon : "A pale white powder that tingles strongly to the touch.  When swallowed, it gives a short burst of manic energy.",
     duration : 5,
     stats : {gatherSpeed : 99}
   }
@@ -274,6 +274,15 @@ encyclopedia.buildings = {
           pickedpoolcap : 1,
         },
         products : { blueleafInk : 1, },
+      },
+      torch : {
+        materials : {
+          pickedblueleaf : 10,
+          stoneroseStem : 1,
+        },
+        products : { torch : 1 },
+        difficulty : 0,
+        timer : 5,
       },
     },
   },
@@ -337,15 +346,6 @@ encyclopedia.buildings = {
         difficulty : 0,
         timer : 5,
       },
-      torch : {
-        materials : {
-          pickedblueleaf : 10,
-          stoneroseStem : 1,
-        },
-        products : { torch : 1 },
-        difficulty : 0,
-        timer : 5,
-      },
       "basic lantern" : {
         materials : {
           lightpuffGlobe : 10,
@@ -364,8 +364,8 @@ encyclopedia.buildings = {
       },
     }
   },
-  writingDesk : {
-    sho : "writing desk",
+  makeshiftTable : {
+    sho : "makeshift table",
     materials : {
       pickedpoolcap : 10,
     },
