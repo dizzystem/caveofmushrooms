@@ -249,7 +249,15 @@ encyclopedia.items = {
     lon : "A pale white powder that tingles strongly to the touch.  When swallowed, it gives a short burst of manic energy.",
     duration : 5,
     stats : {gatherSpeed : 999}
-  }
+  },
+  
+  //======================Utility=====================
+  repairShroom : {
+    type : "repair",
+    sho : "repairshroom",
+    lon : "An arcane mushroom that repairs anything it touches. When used, it will almost certainly restore anything to its original, flawless state.",
+    repair : Infinity,
+  },
 }
 
 encyclopedia.buildings = {

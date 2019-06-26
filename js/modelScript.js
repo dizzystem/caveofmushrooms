@@ -55,7 +55,8 @@ let player = {
       pickedblueleaf : 20,
       journal : 1,
       wisdomSandwich : 5,
-      moongillPowder : 5
+      moongillPowder : 5,
+      repairShroom : 100,
     });
     this.durability = {
       mushroomKnife : 50,
@@ -259,13 +260,9 @@ let player = {
           this.recalculateStats();
           log.log("break-" + this.equipment["tool"]);
         }
+        equipmentDisplay.redraw();
       }
     }
-  },
-  repairItem : function(thing) {
-    let itemInfo = encyclopedia.itemData(thing);
-    player.durability[thing] = itemInfo.durability;
-    recalculateStats();
   },
   tick : function(){
     // Increases the progress of actions
@@ -353,6 +350,9 @@ let encyclopedia = {
         }
         if (itemData.type === "picked-mushroom" || itemData.type === "food"){
           ac.eat = 'eat("'+item+'")';
+        }
+        if (itemData.type === "repair") {
+          ac.repair = 'repair("'+item+'")';
         }
       break;
     }
