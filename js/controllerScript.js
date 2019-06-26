@@ -496,7 +496,7 @@ const log = {
           default:
             return "That action is currently invalid.";
         }
-      case "examine":
+      case "examine": {
         thing = bits[1];
         let data = encyclopedia.itemData(thing);
         txt = "<p>"+data.lon+"</p>";
@@ -504,6 +504,7 @@ const log = {
           txt += "<p>You decide to name the "+data.bsho+" \""+data.sho+"\".</p>";
         }
         return txt;
+      }
       case "journal":
         txt = "<p>You flip through your journal. ";
         if (player.discovered.length){
@@ -521,7 +522,7 @@ const log = {
         } else
           txt += "You haven't completed any research yet.</p>";
         return txt;
-      case "look":
+      case "look": {
         txt = "<p>"; //geographical features, eventually? also list of mushrooms
         let buildings = hex.getBuilding();
         let len = sizeof(buildings);
@@ -537,8 +538,24 @@ const log = {
         }
         txt += "</p>";
         return txt;
+      }
       case "travel":
         return "You've arrived at your newest destination: " + hex.getName() + ".";
+      case "eat": {
+        thing = bits[1];
+        let data = encyclopedia.itemData(thing);
+        return capitalize(data.sho) + " consumed.";
+      }
+      case "expire": {
+        thing = bits[1];
+        let data = encyclopedia.itemData(thing);
+        return "The effects of " + data.sho + " has expired.";
+      }
+      case "break": {
+        thing = bits[1];
+        let data = encyclopedia.itemData(thing);
+        return "Your " + data.sho + " broke. You won't be able to use it until it is repaired.";
+      }
     }
   },
   entryTitle(unique, details){
@@ -570,6 +587,19 @@ const log = {
         return hex.getName();
       case "travel":
         return "New Location";
+      case "eat": {
+        return "Item Consumed";
+      }
+      case "expire": {
+        thing = bits[1];
+        let data = encyclopedia.itemData(thing);
+        return "Expired: " + capitalize(data.sho); 
+      }
+      case "break": {
+        thing = bits[1];
+        let data = encyclopedia.itemData(thing);
+        return "Equipment Broken: " + capitalize(data.sho);
+      }
       default:
         return null;
     }
@@ -741,6 +771,7 @@ function eat(thing) {
     player.recalculateStats();
   }
   player.i.adjInv(thing, -1);
+  log.log("eat-" + thing);
   inventoryDisplay.redraw();
 }
 

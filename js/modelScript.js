@@ -257,6 +257,7 @@ let player = {
         this.durability[this.equipment["tool"]]--;
         if (this.durability[this.equipment["tool"]] <= 0) {
           this.recalculateStats();
+          log.log("break-" + this.equipment["tool"]);
         }
       }
     }
@@ -282,6 +283,7 @@ let player = {
     for (let food of Object.keys(this.consumed)) {
       this.consumed[food]--;
       if (this.consumed[food] <= 0) {
+        log.log("expire-" + food);
         delete this.consumed[food];
         buffExpired = true;
       }
