@@ -6,7 +6,7 @@ encyclopedia.items = {
     tier : 1,
     bsho : "frilly blue mushroom",
     sho : "blueleaf",
-    lon : "This tall blue mushroom has a wide cap covered in little frills.  The frills spread out delicately like a poofy skirt, or possibly the canopy of a tree.",
+    lon : "This tall blue mushroom has a wide cap covered in little frills.  The frills spread out delicately like a poofy skirt, or possibly the canopy of a tree.  It smells refreshing.",
   },
   poolcap : {
     type : "living-mushroom",
@@ -80,6 +80,13 @@ encyclopedia.items = {
     bsho : "glowing green mushroom",
     sho : "lightpuff",
     lon : "This mushroom has a round puffy cap that glows a faint eerie green in the dark.",
+  },
+  ambershine : {
+    type : "living-mushroom",
+    tier : 2,
+    bsho : "dull silver mushroom",
+    sho : "ambershine",
+    lon : "This mushroom is normally a dull metallic silver, but has a bright golden shine underneath when the top layer is rubbed off.  The silver layer slowly forms again as long as it's left exposed to the air.",
   },
   silverstack : {
     type : "living-mushroom",
