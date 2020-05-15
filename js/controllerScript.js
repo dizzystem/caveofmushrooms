@@ -886,6 +886,7 @@ function repair(consumed) {
     player.durability[equip] = encyclopedia.itemData(equip).durability;
   }
   player.i.adjInv(consumed, -1);
+  player.recalculateStats();
   log.log("repair", {"consumed" : consumed, "equip" : equip});
   inventoryDisplay.redraw();
   equipmentDisplay.redraw();
