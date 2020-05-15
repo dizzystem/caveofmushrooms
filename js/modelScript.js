@@ -55,7 +55,8 @@ let player = {
       pickedblueleaf : 20,
       journal : 1,
       wisdomSandwich : 5,
-      moongillPowder : 5
+      moongillPowder : 5,
+      repairShroom : 100,
     });
     this.durability = {
       mushroomKnife : 50,
@@ -257,14 +258,11 @@ let player = {
         this.durability[this.equipment["tool"]]--;
         if (this.durability[this.equipment["tool"]] <= 0) {
           this.recalculateStats();
+          log.log("break-" + this.equipment["tool"]);
         }
+        equipmentDisplay.redraw();
       }
     }
-  },
-  repairItem : function(thing) {
-    let itemInfo = encyclopedia.itemData(thing);
-    player.durability[thing] = itemInfo.durability;
-    recalculateStats();
   },
   tick : function(){
     // Increases the progress of actions
@@ -282,6 +280,7 @@ let player = {
     for (let food of Object.keys(this.consumed)) {
       this.consumed[food]--;
       if (this.consumed[food] <= 0) {
+        log.log("expire-" + food);
         delete this.consumed[food];
         buffExpired = true;
       }
@@ -351,6 +350,9 @@ let encyclopedia = {
         }
         if (itemData.type === "picked-mushroom" || itemData.type === "food"){
           ac.eat = 'eat("'+item+'")';
+        }
+        if (itemData.type === "repair") {
+          ac.repair = 'repair("'+item+'")';
         }
       break;
     }

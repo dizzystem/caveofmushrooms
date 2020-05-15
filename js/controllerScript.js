@@ -355,13 +355,17 @@ const equipmentDisplay = {
       if (!item) continue;
       let itemData = encyclopedia.itemData(item);
       if (!itemData) continue;
+      let displayText = itemData.sho;
+      if (slot === "tool") {
+        const durability = Math.ceil(player.durability[item] * 100 / itemData.durability);
+        displayText += " (" + durability + "%)";
+      }
       
       //todo: make equipment align right, using spans or something
-      //more todo: make equipped items be placed first in inventory with a tag
       if (this.hovering === slot){
-        txt += "<p>"+capitalize(slot)+": "+itemData.sho+" (<a onclick='remove(\""+slot+"\")'>remove</a>)</p>";
+        txt += "<p>"+capitalize(slot)+": "+displayText+" (<a onclick='remove(\""+slot+"\")'>remove</a>)</p>";
       } else {
-        txt += "<p>"+capitalize(slot)+": <a onmouseover='equipmentDisplay.hovered(\""+slot+"\")'>"+itemData.sho+"</a></p>";
+        txt += "<p>"+capitalize(slot)+": <a onmouseover='equipmentDisplay.hovered(\""+slot+"\")'>"+displayText+"</a></p>";
       }
     }
     this.display.html(txt);
@@ -479,6 +483,10 @@ const log = {
             return "That building is not here.";
           case "read":
             return "You can't read that.";
+          case "repairnoequip":
+            return "You are not equipping anything. Equip the item you want to repair.";
+          case "repairfullbar":
+            return "Your equipped tool does not require repairing. Equip the item you want to repair.";
           case "needitem":
             if (bits.length < 2){
               return "You don't have the necessary equipment to go this way.";
@@ -496,7 +504,7 @@ const log = {
           default:
             return "That action is currently invalid.";
         }
-      case "examine":
+      case "examine": {
         thing = bits[1];
         let data = encyclopedia.itemData(thing);
         txt = "<p>"+data.lon+"</p>";
@@ -504,6 +512,7 @@ const log = {
           txt += "<p>You decide to name the "+data.bsho+" \""+data.sho+"\".</p>";
         }
         return txt;
+      }
       case "journal":
         txt = "<p>You flip through your journal. ";
         if (player.discovered.length){
@@ -521,7 +530,7 @@ const log = {
         } else
           txt += "You haven't completed any research yet.</p>";
         return txt;
-      case "look":
+      case "look": {
         txt = "<p>"; //geographical features, eventually? also list of mushrooms
         let buildings = hex.getBuilding();
         let len = sizeof(buildings);
@@ -537,8 +546,29 @@ const log = {
         }
         txt += "</p>";
         return txt;
+      }
       case "travel":
         return "You've arrived at your newest destination: " + hex.getName() + ".";
+      case "eat": {
+        thing = bits[1];
+        let data = encyclopedia.itemData(thing);
+        return capitalize(data.sho) + " consumed.";
+      }
+      case "expire": {
+        thing = bits[1];
+        let data = encyclopedia.itemData(thing);
+        return "The effects of " + data.sho + " has expired.";
+      }
+      case "break": {
+        thing = bits[1];
+        let data = encyclopedia.itemData(thing);
+        return "Your " + data.sho + " broke. You won't be able to use it until it is repaired.";
+      }
+      case "repair": {
+        let data = encyclopedia.itemData(details.consumed);
+        let equipData = encyclopedia.itemData(details.equip);
+        return "You've used a " + data.sho + " to repair your " + equipData.sho + ".";
+      }
     }
   },
   entryTitle(unique, details){
@@ -570,6 +600,22 @@ const log = {
         return hex.getName();
       case "travel":
         return "New Location";
+      case "eat": {
+        return "Item Consumed";
+      }
+      case "expire": {
+        thing = bits[1];
+        let data = encyclopedia.itemData(thing);
+        return "Expired: " + capitalize(data.sho); 
+      }
+      case "break": {
+        thing = bits[1];
+        let data = encyclopedia.itemData(thing);
+        return "Equipment Broken: " + capitalize(data.sho);
+      }
+      case "repair":
+        let equipData = encyclopedia.itemData(details.equip);
+        return "Equipment Repaired: " + capitalize(equipData.sho);
       default:
         return null;
     }
@@ -741,6 +787,7 @@ function eat(thing) {
     player.recalculateStats();
   }
   player.i.adjInv(thing, -1);
+  log.log("eat-" + thing);
   inventoryDisplay.redraw();
 }
 
@@ -815,6 +862,31 @@ function remove(thing) {
   const removedItem = player.getEquip(thing);
   player.i.adjInv(removedItem, 1);
   player.setEquip(thing, null);
+  inventoryDisplay.redraw();
+  equipmentDisplay.redraw();
+}
+
+function repair(consumed) {
+  const equip = player.getEquip("tool");
+  // Prevent repairs if tool isn't equipped, or if it's at full durability.
+  if (equip === null) {
+    log.log("error-repairnoequip");
+    return;
+  }
+  const equipData = encyclopedia.itemData(equip);
+  if (player.durability[equip] === encyclopedia.itemData(equip).durability) {
+    log.log("error-repairfullbar");
+    return;
+  }
+  // Adds durability to the tool by fetching the repair attribute of the 
+  // item consumed. Note that the tool's durability can't exceed its default value.
+  const itemInfo = encyclopedia.itemData(consumed);
+  player.durability[equip] += itemInfo.repair;
+  if (player.durability[equip] > encyclopedia.itemData(equip).durability) {
+    player.durability[equip] = encyclopedia.itemData(equip).durability;
+  }
+  player.i.adjInv(consumed, -1);
+  log.log("repair", {"consumed" : consumed, "equip" : equip});
   inventoryDisplay.redraw();
   equipmentDisplay.redraw();
 }
