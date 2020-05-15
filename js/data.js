@@ -432,52 +432,62 @@ encyclopedia.enter = {
 
 encyclopedia.hexes = {
   h0_0 : {
-    mushrooms : [],
+    mushrooms : {},
   },
   h1_0 : {
-    mushrooms : [],
+    mushrooms : {},
   },
   
   //Zone 1
   h1_1 : {
-    mushrooms : [],
+    mushrooms : {},
   },
+  // Note: number at the end is the mushroom capacity 
+  // for the area. 
   h1_2 : {
     name : "Sun's Landing",
-    mushrooms : [ "blueleaf", "poolcap" ],
+    mushrooms : {
+	  "blueleaf" : 5,
+	  "poolcap" : 500
+	},
     colour : "#AAAAAA",
   },
   h0_3 : {
-    mushrooms : [ "stonerose", "zestnub" ],
+    mushrooms : {
+	  "stonerose" : 500,
+	  "zestnub" : 500
+	},
     colour : "#B5B26A",
   },
   h1_3 : {
-    mushrooms : [ "fluffshroom" ],
+    mushrooms : {
+	  "fluffshroom" : 500
+	},
     colour : "#C08180",
   },
   h2_2 : {
-    mushrooms : [ ],
+    mushrooms : {},
   },
   
   //Zone 2
   h3_2 : {
     name : "Flooded Lake",
-    mushrooms : [],
+    mushrooms : {},
     canEnter : encyclopedia.enter.needsBoat,
     colour : "#8888AA",
   },
   h4_2 : {
     name : "Flooded Lake",
-    mushrooms : [],
+    mushrooms : {},
     canEnter : encyclopedia.enter.needsBoat,
     colour : "#8888AA",
   },
   
   //Zone 3
   h1_4 : {
-    mushrooms : [],
+    mushrooms : {},
   },
   h0_5 : {
-    mushrooms : [],
+    mushrooms : {},
   },
 }

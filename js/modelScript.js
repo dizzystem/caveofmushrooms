@@ -20,11 +20,13 @@ let world = {
     }
   },
   tick : function(){
-    /*
     for (let i=0;i<this.hexes.length;i++){
-      this.hexes[i].tick();
+	  for (let j=0; j<this.hexes[0].length;j++) {
+		if (this.hexes[i][j] !== null) {
+          this.hexes[i][j].tick();
+		}
+	  }
     }
-    */
   },
   getHex : function(hx, hy){
     if (!this.hexes[hy]) return null;
@@ -142,10 +144,13 @@ let player = {
         thing = action.details.thing;
         
         this.i.adjInv("picked"+thing, 1);
+		this.currentHex().i.adjInv(thing, -1);
         inventoryDisplay.redraw();
         
         if (this.currentHex().i.getInv(thing) <= 0){
           this.action = null;
+		  log.log("depleted-"+thing);
+		  locationDisplay.redraw();
         }
       break;
       case "build":
@@ -381,6 +386,10 @@ function container(name, startinv){
     this.inventory[item] += amount;
     if (this.inventory[item] === 0) delete this.inventory[item];
   }
+  this.setInv = function(item, amount){
+    this.inventory[item] = amount;
+    if (this.inventory[item] === 0) delete this.inventory[item];
+  }
   this.canAfford = function(materials){
     for (let material in materials){
       if (this.getInv(material) < materials[material]){
@@ -406,13 +415,16 @@ function hex(id, x, y){
   this.id = id;
   this.x = x;
   this.y = y;
+  this.name = undefined;
+  this.buildings = {};
   //In the future, colours should probably signify something.
   this.colour = "#"+(100+Math.floor(100*Math.random())).toString(16)+
                     (100+Math.floor(100*Math.random())).toString(16)+
                     (100+Math.floor(100*Math.random())).toString(16);
-  this.tick = function(){
-    //Nothing yet.
-  }
+  this.i = new container(id, {});
+  this.capacity = undefined;
+  this.regrowthTime = {};
+  
   this.getName = function(){
     if (this.name) return this.name;
     return this.id;
@@ -421,7 +433,6 @@ function hex(id, x, y){
   if (encyc){
     this.name = encyc.name;
   }
-  this.buildings = {};
   this.addBuilding = function(building){
     if (!this.buildings[building]) this.buildings[building] = 0;
     this.buildings[building] ++;
@@ -466,12 +477,38 @@ function hex(id, x, y){
     else return false;
   }
   this.addMushrooms = function(mushrooms){
-    for (let i=0;i<mushrooms.length;i++){
-      this.i.adjInv(mushrooms[i], 5);
+	this.capacity = mushrooms;
+    for (let mushroom in mushrooms){
+      this.i.adjInv(mushroom, mushrooms[mushroom]);
     }
+	this.initialiseRegrowth();
   }
-  
-  this.i = new container(id, {});
+  // We will eventually refactor this to take in account climate 
+  // and different base regrowth times. 
+  this.initialiseRegrowth = function() {
+	for (let mushroom in this.capacity) {
+	  this.regrowthTime[mushroom] = 20000;
+	}
+  },
+  this.handleRegrowth = function() {
+	let displayChanged = false;
+	for (let mushroom in this.regrowthTime) {
+	  if (this.i.getInv(mushroom) < this.capacity[mushroom]) {
+        this.regrowthTime[mushroom] -= 100;
+	  }
+	  if (this.regrowthTime[mushroom] <= 0) {
+		this.regrowthTime[mushroom] += 20000;
+		this.i.setInv(mushroom, this.capacity[mushroom]);
+		displayChanged = true;
+	  }
+	}
+	if (displayChanged) {
+	  locationDisplay.redraw();
+	}
+  },
+  this.tick = function(){
+    this.handleRegrowth();
+  }
 }
 
 //Constructor for the action object.

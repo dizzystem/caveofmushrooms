@@ -434,7 +434,12 @@ const log = {
         thing = bits[1];
         buildingData = encyclopedia.buildingData(thing);
         return "Built a <a onclick=\"enter('"+thing+"')\">"+buildingData.sho+"</a> in "+hex.getName()+".";
-      case "enter":
+      case "depleted": {
+		thing = bits[1]
+	    let data = encyclopedia.itemData(thing);
+		return "The area has run out of " + data.sho + ". You may wait for them to replenish.";
+	  }
+	  case "enter":
         thing = bits[1];
         buildingData = encyclopedia.buildingData(thing);
         if (buildingData.recipes){
@@ -582,17 +587,22 @@ const log = {
       case "built":
         buildingData = encyclopedia.buildingData(bits[1]);
         return capitalize(buildingData.sho);
+	  case "depleted": {
+	    let data = encyclopedia.itemData(bits[1]);
+		return "Depleted: " + capitalize(data.sho);
+	  }
       case "enter":
         buildingData = encyclopedia.buildingData(bits[1]);
         return capitalize(buildingData.sho);
       case "error":
         return null;
-      case "examine":
+      case "examine": {
         let data = encyclopedia.itemData(bits[1]);
         if (details === "discover")
           return "Discovered: "+capitalize(data.sho);
         else
           return capitalize(data.sho);
+	  }
       case "journal":
         return "Journal";
       case "look":
@@ -613,10 +623,11 @@ const log = {
         let data = encyclopedia.itemData(thing);
         return "Equipment Broken: " + capitalize(data.sho);
       }
-      case "repair":
+      case "repair": {
         let equipData = encyclopedia.itemData(details.equip);
         return "Equipment Repaired: " + capitalize(equipData.sho);
-      default:
+      }
+	  default:
         return null;
     }
   },
