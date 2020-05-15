@@ -521,6 +521,8 @@ function action(name, details){
   }
 }
 
+let previousTimestamp = (new Date()).getTime();
+
 function setup(){
   fps = 10;
   world.start();
@@ -531,6 +533,15 @@ function setup(){
 }
 
 function tick(){
-  world.tick();
-  player.tick();
+  let newTimestamp = (new Date()).getTime();
+  let timeDifference = newTimestamp - previousTimestamp;
+  if (timeDifference > 1000) {
+    timeDifference = 1000;
+  }
+  // Carry over any unused seconds.
+  previousTimestamp = newTimestamp - (timeDifference % 100);
+  for (let i = 0; i < Math.floor(timeDifference / 100); i++) {
+    world.tick();
+    player.tick();
+  }
 }
