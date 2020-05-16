@@ -246,16 +246,23 @@ encyclopedia.items = {
   wisdomSandwich : {
     type : "food",
     sho : "wisdom sandwich",
-    lon : "A sandwich that grants increased construction speed. This is a testing item, so if you have it, chances are that you're hacking.",
-    duration : 10,
-    stats : {buildSpeed : 9}
+    lon : "A sandwich that grants increased construction and research speed. This is a testing item, so if you have it, chances are that you're hacking.",
+    duration : 100,
+    stats : {buildSpeed : 9, researchSpeed : 9}
   },
   moongillPowder : {
     type : "food",
     sho : "moongill powder",
-    lon : "A pale white powder that tingles strongly to the touch.  When swallowed, it gives a short burst of manic energy.",
+    lon : "A pale white powder that tingles strongly to the touch.  When swallowed, it gives a short burst of manic energy which increases your mushroom gathering speed.",
     duration : 5,
     stats : {gatherSpeed : 999}
+  },
+  moongillierPowder : {
+    type : "food",
+    sho : "moongillier powder",
+    lon : "basically crack. this is also a testing item",
+    duration : 9001,
+    stats : {gatherSpeed : 999, craftSpeed : 999}
   },
   
   //======================Utility=====================
@@ -447,8 +454,8 @@ encyclopedia.hexes = {
   h1_2 : {
     name : "Sun's Landing",
     mushrooms : {
-	  "blueleaf" : 5,
-	  "poolcap" : 500
+	  "blueleaf" : 500,
+	  "poolcap" : Infinity
 	},
     colour : "#AAAAAA",
   },

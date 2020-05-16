@@ -56,8 +56,9 @@ let player = {
       mushroomKnife : 1,
       pickedblueleaf : 20,
       journal : 1,
-      wisdomSandwich : 5,
+      wisdomSandwich : 500,
       moongillPowder : 5,
+	  moongillierPowder : 500,
       repairShroom : 100,
     });
     this.durability = {
@@ -109,6 +110,8 @@ let player = {
         return playerStats.buildSpeed;
       case "gather":
         return playerStats.gatherSpeed;
+	  case "craft":
+        return playerStats.craftSpeed;
     }
     return 1;
   },
@@ -187,6 +190,10 @@ let player = {
       case "research":
         buildingData = encyclopedia.buildingData(action.details.building);
         let research = buildingData.research[action.details.thing];
+		if (player.researched[action.details.thing] >= research.limit){
+          this.action = null;
+          break;
+        }
         if (!player.i.canAfford(research.materials)){
           this.action = null;
           break;
@@ -196,7 +203,7 @@ let player = {
         if (!player.researched[action.details.thing])
           player.researched[action.details.thing] = 0;
         player.researched[action.details.thing] ++;
-        if (player.researched[action.details.thing] >= research.limit){
+		if (player.researched[action.details.thing] >= research.limit){
           this.action = null;
           break;
         }
@@ -531,8 +538,8 @@ function action(name, details){
       break;
     }
     case "craft": {
-      const buildingData = encyclopedia.buildingData(building);
-      const recipe = buildingData.recipes[thing];
+      const buildingData = encyclopedia.buildingData(details.building);
+      const recipe = buildingData.recipes[details.thing];
       let timer = recipe.timer;
       if (!timer) {
         timer = 10;
@@ -541,8 +548,8 @@ function action(name, details){
       break;
     }
     case "research": {
-      const buildingData = encyclopedia.buildingData(building);
-      const recipe = buildingData.research[thing];
+      const buildingData = encyclopedia.buildingData(details.building);
+      const recipe = buildingData.research[details.thing];
       let timer = recipe.timer;
       if (!timer) {
         timer = 10;

@@ -3,6 +3,8 @@ function pluralize(str){
   switch (str[str.length-1]){
     case "f":
       return str.slice(0, str.length-1)+"ves";
+    case "fe":
+      return str.slice(0, str.length-2)+"ves";
     case "y":
       return str.slice(0, str.length-1)+"ies";
     case "s":
@@ -199,20 +201,20 @@ const actionDisplay = {
     else {
       let details = action.details;
       switch(action.name){
-        case "travel":
-          txt = "You are travelling to "+world.getHex(player.getX()+details.x, player.getY()+details.y).id+". ";
-        break;
-        case "gather":
-          txt = "You are gathering "+encyclopedia.itemData(details.thing).plu+". ";
-        break;
         case "build":
           txt = "You are building a "+encyclopedia.buildingData(details.thing).sho+". ";
         break;
         case "craft":
           txt = "You are crafting "+details.thing+". ";
         break;
+        case "gather":
+          txt = "You are gathering "+encyclopedia.itemData(details.thing).plu+". ";
+        break;
         case "research":
           txt = "You are researching "+details.thing+". ";
+        break;
+        case "travel":
+          txt = "You are travelling to "+world.getHex(player.getX()+details.x, player.getY()+details.y).id+". ";
         break;
       }
       const actionTimer = (action.required - action.progress) / player.actionSpeed;
@@ -405,6 +407,11 @@ const log = {
     let hex = player.currentHex();
     let thing, buildingData;
     switch (bits[0]){
+	  case "break": {
+        thing = bits[1];
+        let data = encyclopedia.itemData(thing);
+        return "Your " + data.sho + " broke. You won't be able to use it until it is repaired.";
+      }
       case "build":
         let name = hex.getName();
         let canbuilds = hex.canBuild(null, true);
@@ -439,6 +446,11 @@ const log = {
 	    let data = encyclopedia.itemData(thing);
 		return "The area has run out of " + data.sho + ". You may wait for them to replenish.";
 	  }
+	  case "eat": {
+        thing = bits[1];
+        let data = encyclopedia.itemData(thing);
+        return capitalize(data.sho) + " consumed.";
+      }
 	  case "enter":
         thing = bits[1];
         buildingData = encyclopedia.buildingData(thing);
@@ -462,6 +474,9 @@ const log = {
           txt += "<p>You can research:</p>";
           let research = buildingData.research;
           for (let name in research){
+			if (player.researched[name] === research[name].limit) {
+			  continue;
+			}
             let mats = [];
             let recipe = research[name];
             for (let material in recipe.materials){
@@ -478,20 +493,6 @@ const log = {
         return txt;
       case "error":
         switch(bits.length > 1 ? bits[1] : null){
-          case "nomaterialstocraft":
-            return "You do not have the materials to craft this item.";
-          case "nomaterialstoresearch":
-            return "You do not have the materials to perform this research.";
-          case "oldbuild":
-            return "You can't build that here.";
-          case "oldenter":
-            return "That building is not here.";
-          case "read":
-            return "You can't read that.";
-          case "repairnoequip":
-            return "You are not equipping anything. Equip the item you want to repair.";
-          case "repairfullbar":
-            return "Your equipped tool does not require repairing. Equip the item you want to repair.";
           case "needitem":
             if (bits.length < 2){
               return "You don't have the necessary equipment to go this way.";
@@ -506,6 +507,22 @@ const log = {
                 const itemData = encyclopedia.itemData(item);
                 return "You need a "+itemData.sho+" to go this way.";
             }
+		  case "nomaterialstocraft":
+            return "You do not have the materials to craft this item.";
+          case "nomaterialstoresearch":
+            return "You do not have the materials to perform this research.";
+          case "oldbuild":
+            return "You can't build that here.";
+          case "oldenter":
+            return "That building is not here.";
+          case "read":
+            return "You can't read that.";
+          case "repairnoequip":
+            return "You are not equipping anything. Equip the item you want to repair.";
+          case "repairfullbar":
+            return "Your equipped tool does not require repairing. Equip the item you want to repair.";
+          case "researchcapped":
+		    return "This item is already at its maximum research level.";
           default:
             return "That action is currently invalid.";
         }
@@ -517,6 +534,11 @@ const log = {
           txt += "<p>You decide to name the "+data.bsho+" \""+data.sho+"\".</p>";
         }
         return txt;
+      }
+      case "expire": {
+        thing = bits[1];
+        let data = encyclopedia.itemData(thing);
+        return "The effects of " + data.sho + " has expired.";
       }
       case "journal":
         txt = "<p>You flip through your journal. ";
@@ -552,28 +574,13 @@ const log = {
         txt += "</p>";
         return txt;
       }
-      case "travel":
-        return "You've arrived at your newest destination: " + hex.getName() + ".";
-      case "eat": {
-        thing = bits[1];
-        let data = encyclopedia.itemData(thing);
-        return capitalize(data.sho) + " consumed.";
-      }
-      case "expire": {
-        thing = bits[1];
-        let data = encyclopedia.itemData(thing);
-        return "The effects of " + data.sho + " has expired.";
-      }
-      case "break": {
-        thing = bits[1];
-        let data = encyclopedia.itemData(thing);
-        return "Your " + data.sho + " broke. You won't be able to use it until it is repaired.";
-      }
-      case "repair": {
+	  case "repair": {
         let data = encyclopedia.itemData(details.consumed);
         let equipData = encyclopedia.itemData(details.equip);
         return "You've used a " + data.sho + " to repair your " + equipData.sho + ".";
       }
+      case "travel":
+        return "You've arrived at your newest destination: " + hex.getName() + ".";
     }
   },
   entryTitle(unique, details){
@@ -581,6 +588,11 @@ const log = {
     let hex = player.currentHex();
     let buildingData;
     switch (bits[0]){
+      case "break": {
+        thing = bits[1];
+        let data = encyclopedia.itemData(thing);
+        return "Equipment Broken: " + capitalize(data.sho);
+      }
       case "build":
         hex = player.currentHex();
         return hex.getName();
@@ -591,6 +603,9 @@ const log = {
 	    let data = encyclopedia.itemData(bits[1]);
 		return "Depleted: " + capitalize(data.sho);
 	  }
+      case "eat": {
+        return "Item Consumed";
+      }
       case "enter":
         buildingData = encyclopedia.buildingData(bits[1]);
         return capitalize(buildingData.sho);
@@ -603,6 +618,11 @@ const log = {
         else
           return capitalize(data.sho);
 	  }
+      case "expire": {
+        thing = bits[1];
+        let data = encyclopedia.itemData(thing);
+        return "Expired: " + capitalize(data.sho); 
+      }
       case "journal":
         return "Journal";
       case "look":
@@ -610,19 +630,6 @@ const log = {
         return hex.getName();
       case "travel":
         return "New Location";
-      case "eat": {
-        return "Item Consumed";
-      }
-      case "expire": {
-        thing = bits[1];
-        let data = encyclopedia.itemData(thing);
-        return "Expired: " + capitalize(data.sho); 
-      }
-      case "break": {
-        thing = bits[1];
-        let data = encyclopedia.itemData(thing);
-        return "Equipment Broken: " + capitalize(data.sho);
-      }
       case "repair": {
         let equipData = encyclopedia.itemData(details.equip);
         return "Equipment Repaired: " + capitalize(equipData.sho);
@@ -770,6 +777,9 @@ function craft(thing, building){
 function research(thing, building){
   let buildingData = encyclopedia.buildingData(building);
   let research = buildingData.research[thing];
+  if (player.researched[thing] >= research.limit){
+	return log.log("error-researchcapped");
+  }
   if (!player.i.canAfford(research.materials)){
     return log.log("error-nomaterialstoresearch");
   }
