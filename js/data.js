@@ -57,9 +57,9 @@ encyclopedia.items = {
   silverstack : {
     type : "living-mushroom",
     tier : 2,
-    bsho : "huge brown mushroom",
+    bsho : "stacked silver mushroom",
     sho : "silverstack",
-    lon : "This is a towering brown mushroom of highly unusual size, even for the big mushrooms that grow down here.",
+    lon : "This mushroom grows in piles of pale shimmering circles. The lower layers gradually die and harden into a form resembling wood.",
   },
   cavecherry : {
     type : "living-mushroom",
@@ -89,13 +89,6 @@ encyclopedia.items = {
     sho : "ambershine",
     lon : "This mushroom is normally a dull metallic silver, but has a bright golden shine underneath when the top layer is rubbed off.  The silver layer slowly forms again as long as it's left exposed to the air.",
   },
-  silverstack : {
-    type : "living-mushroom",
-    tier : 2,
-    bsho : "stacked silver mushroom",
-    sho : "silverstack",
-    lon : "This mushroom grows in piles of pale shimmering circles. The lower layers gradually die and harden into a form resembling wood.",
-  },
   fluffshroom : {
     type : "living-mushroom",
     tier : 2,
@@ -114,6 +107,12 @@ encyclopedia.items = {
     tier : 2,
     sho : "picked blueleaf",
     lon : "A frilly blue mushroom that's been cut neatly at the base.",
+  },
+  pickedpoolcap : {
+    type : "picked-mushroom",
+    tier : 2,
+    sho : "picked poolcap",
+    lon : "A bowl-shaped pink mushroom that's been cut neatly at the base.  It's full of water.",
   },
   pickedsilkveil : {
     type : "picked-mushroom",
@@ -137,7 +136,7 @@ encyclopedia.items = {
     type : "picked-mushroom",
     tier : 2,
     sho : "picked wooltop",
-    
+    lon : "placeholder description"
   },
   pickedholegrain : {
     type : "picked-mushroom",
@@ -163,12 +162,24 @@ encyclopedia.items = {
     sho : "picked zestnub",
     lon : "A tiny yellow mushroom that's been cut neatly at the base.",
   },
-  pickedpoolcap : {
-    type : "picked-mushroom",
+  pickedlightpuff : {
+	type : "picked-mushroom",
     tier : 2,
-    sho : "picked poolcap",
-    lon : "A bowl-shaped pink mushroom that's been cut neatly at the base.  It's full of water.",
+    sho : "picked lightpuff",
+    lon : "A glowing green mushroom that's been cut neatly at the base.",
   },
+  pickedambershine : {
+	type : "picked-mushroom",
+    tier : 2,
+    sho : "picked ambershine",
+    lon : "A dull silver mushroom that's been cut neatly at the base.",
+  },
+  pickedfluffshroom : {
+	type : "picked-mushroom",
+    tier : 2,
+    sho : "picked fluffshroom",
+    lon : "A furred pale orange mushroom that's been cut neatly at the base.",
+  }
   
   //==============Procesed mushroom resources==================
   blueleafInk : {
