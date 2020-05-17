@@ -163,19 +163,19 @@ encyclopedia.items = {
     lon : "A tiny yellow mushroom that's been cut neatly at the base.",
   },
   pickedlightpuff : {
-	type : "picked-mushroom",
+    type : "picked-mushroom",
     tier : 2,
     sho : "picked lightpuff",
     lon : "A glowing green mushroom that's been cut neatly at the base.",
   },
   pickedambershine : {
-	type : "picked-mushroom",
+    type : "picked-mushroom",
     tier : 2,
     sho : "picked ambershine",
     lon : "A dull silver mushroom that's been cut neatly at the base.",
   },
   pickedfluffshroom : {
-	type : "picked-mushroom",
+    type : "picked-mushroom",
     tier : 2,
     sho : "picked fluffshroom",
     lon : "A furred pale orange mushroom that's been cut neatly at the base.",

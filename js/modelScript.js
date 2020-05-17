@@ -21,11 +21,11 @@ let world = {
   },
   tick : function(){
     for (let i=0;i<this.hexes.length;i++){
-	  for (let j=0; j<this.hexes[0].length;j++) {
-		if (this.hexes[i][j] !== null) {
-          this.hexes[i][j].tick();
-		}
-	  }
+      for (let j=0; j<this.hexes[0].length;j++) {
+        if (this.hexes[i][j] !== null) {
+              this.hexes[i][j].tick();
+        }
+      }
     }
   },
   getHex : function(hx, hy){
@@ -58,7 +58,7 @@ let player = {
       journal : 1,
       wisdomSandwich : 500,
       moongillPowder : 5,
-	  moongillierPowder : 500,
+      moongillierPowder : 500,
       repairShroom : 100,
     });
     this.durability = {
@@ -107,7 +107,7 @@ let player = {
         return playerStats.buildSpeed;
       case "gather":
         return playerStats.gatherSpeed;
-	  case "craft":
+      case "craft":
         return playerStats.craftSpeed;
     }
     return 1;
@@ -139,20 +139,18 @@ let player = {
         locationDisplay.hovering = null;
         locationDisplay.redraw();
         this.action = null;
-      break;
+        break;
       case "gather":
         thing = action.details.thing;
-        
         this.i.adjInv("picked"+thing, 1);
-		this.currentHex().i.adjInv(thing, -1);
+        this.currentHex().i.adjInv(thing, -1);
         inventoryDisplay.redraw();
-        
         if (this.currentHex().i.getInv(thing) <= 0){
           this.action = null;
-		  log.log("depleted-"+thing);
-		  locationDisplay.redraw();
+          log.log("depleted-"+thing);
+          locationDisplay.redraw();
         }
-      break;
+        break;
       case "build":
         thing = action.details.thing;
         buildingData = encyclopedia.buildingData(thing);
@@ -168,7 +166,7 @@ let player = {
         hex.addBuilding(thing);
         log.log("built-"+thing);
         this.action = null;
-      break;
+        break;
       case "craft":
         buildingData = encyclopedia.buildingData(action.details.building);
         let recipe = buildingData.recipes[action.details.thing];
@@ -183,11 +181,11 @@ let player = {
           this.action = null;
           break;
         }
-      break;
+        break;
       case "research":
         buildingData = encyclopedia.buildingData(action.details.building);
         let research = buildingData.research[action.details.thing];
-		if (player.researched[action.details.thing] >= research.limit){
+        if (player.researched[action.details.thing] >= research.limit){
           this.action = null;
           break;
         }
@@ -200,9 +198,9 @@ let player = {
         if (!player.researched[action.details.thing])
           player.researched[action.details.thing] = 0;
         player.researched[action.details.thing] ++;
-		log.log("research-" + action.details.thing, 
-		  {player:player, research:research});
-		if (player.researched[action.details.thing] >= research.limit){
+        log.log("research-" + action.details.thing, 
+          {player:player, research:research});
+        if (player.researched[action.details.thing] >= research.limit){
           this.action = null;
           break;
         }
@@ -333,7 +331,7 @@ let encyclopedia = {
       case "world":
         ac.look = 'look()';
         ac.build = 'build()';
-      break;
+        break;
       case "loc":
         ac.examine = 'examine("'+where+'","'+item+'")';
         if (data.type === "living-mushroom"){
@@ -343,7 +341,7 @@ let encyclopedia = {
         } else {
           ac.get = 'get("'+item+'")';
         }
-      break;
+        break;
       case "inv":
         let itemData = encyclopedia.itemData(item);
         ac.examine = 'examine("'+where+'","'+item+'")';
@@ -356,8 +354,8 @@ let encyclopedia = {
             delete ac.drop;
             delete ac.equip;
             ac.read = 'read("journal")';
-			if (player.researched["map"])
-			  ac.map = 'showMap()';
+          if (player.researched["map"])
+            ac.map = 'showMap()';
             break;
         }
         if (itemData.type === "picked-mushroom" || itemData.type === "food"){
@@ -366,7 +364,7 @@ let encyclopedia = {
         if (itemData.type === "repair") {
           ac.repair = 'repair("'+item+'")';
         }
-      break;
+        break;
     }
     
     let bits = [];
@@ -493,9 +491,9 @@ function hex(id, x, y){
   // We will eventually refactor this to take in account climate 
   // and different base regrowth times. 
   this.initialiseRegrowth = function() {
-	for (let mushroom in this.capacity) {
-	  this.regrowthTime[mushroom] = 20000;
-	}
+    for (let mushroom in this.capacity) {
+      this.regrowthTime[mushroom] = 20000;
+    }
   },
   this.handleRegrowth = function() {
 	let displayChanged = false;
@@ -504,14 +502,14 @@ function hex(id, x, y){
         this.regrowthTime[mushroom] -= 100;
 	  }
 	  if (this.regrowthTime[mushroom] <= 0) {
-		this.regrowthTime[mushroom] += 20000;
-		this.i.setInv(mushroom, this.capacity[mushroom]);
-		displayChanged = true;
-	  }
-	}
-	if (displayChanged) {
-	  locationDisplay.redraw();
-	}
+      this.regrowthTime[mushroom] += 20000;
+      this.i.setInv(mushroom, this.capacity[mushroom]);
+      displayChanged = true;
+      }
+    }
+    if (displayChanged) {
+      locationDisplay.redraw();
+    }
   },
   this.tick = function(){
     this.handleRegrowth();
