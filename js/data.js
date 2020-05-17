@@ -179,7 +179,7 @@ encyclopedia.items = {
     tier : 2,
     sho : "picked fluffshroom",
     lon : "A furred pale orange mushroom that's been cut neatly at the base.",
-  }
+  },
   
   //==============Procesed mushroom resources==================
   blueleafInk : {
