@@ -282,11 +282,11 @@ let player = {
       if (this.action.name == "gather") {
         this.loadout["tool"].durability--;
         if (this.loadout["tool"].durability <= 0) {
+          log.log("break-" + this.loadout["tool"].name);
           if (this.loadout["tool"].breakable) {
             this.loadout["tool"] = null;
           }
           this.recalculateStats();
-          log.log("break-" + this.loadout["tool"]);
         }
         equipmentDisplay.redraw();
       }
