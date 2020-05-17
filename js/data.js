@@ -1,3 +1,14 @@
+const makeEquipment = function(name, settings) {
+  const data = copyObjects(encyclopedia.items[name]);
+  delete data.sho
+  delete data.lon;
+  data.name = name;
+  for (let setting in settings) {
+    data[setting] = settings[setting];
+  }
+  return data;
+}
+
 encyclopedia.items = {
   //==============Living mushroom types==================
 
@@ -236,6 +247,7 @@ encyclopedia.items = {
     lon : "This is a curved knife used for gathering mushrooms.",
     stats : {gatherSpeed : 9},
     durability : 5000,
+    breakable : true
   },
   blueleafHat : {
     type : "equipment-hat",
