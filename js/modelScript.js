@@ -64,9 +64,6 @@ let player = {
     this.durability = {
       mushroomKnife : 50,
     };
-    this.journal = {
-      map : true,
-    };
     this.equipment = {
       tool : "mushroomKnife",
       hat : "blueleafHat",
@@ -203,6 +200,8 @@ let player = {
         if (!player.researched[action.details.thing])
           player.researched[action.details.thing] = 0;
         player.researched[action.details.thing] ++;
+		log.log("research-" + action.details.thing, 
+		  {player:player, research:research});
 		if (player.researched[action.details.thing] >= research.limit){
           this.action = null;
           break;
@@ -357,7 +356,8 @@ let encyclopedia = {
             delete ac.drop;
             delete ac.equip;
             ac.read = 'read("journal")';
-            ac.map = 'showMap()';
+			if (player.researched["map"])
+			  ac.map = 'showMap()';
             break;
         }
         if (itemData.type === "picked-mushroom" || itemData.type === "food"){

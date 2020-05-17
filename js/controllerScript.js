@@ -483,9 +483,9 @@ const log = {
               mats.push(recipe.materials[material]+" "+encyclopedia.itemData(material).sho);
             }
             if (player.i.canAfford(recipe.materials)){
-              txt += "<p><a onclick=\"research('"+name+"','"+thing+"')\">"+name+"</a> ("+qms(mats)+")<br>"+research.desc+"</p>";
+              txt += "<p><a onclick=\"research('"+name+"','"+thing+"')\">"+name+"</a> ("+qms(mats)+")<br>"+research[name].desc+"</p>";
             } else {
-              txt += "<p>"+name+" ("+qms(mats)+")<br>"+research.desc+"</p>";
+              txt += "<p>"+name+" ("+qms(mats)+")<br>"+research[name].desc+"</p>";
             }
           }
         }
@@ -579,6 +579,13 @@ const log = {
         let equipData = encyclopedia.itemData(details.equip);
         return "You've used a " + data.sho + " to repair your " + equipData.sho + ".";
       }
+	  case "research": {
+		if (details.research.completion) {
+		  return details.research.completion;
+		} else {
+		  return capitalize(bits[1]) + " research level is increased to " + details.player.researched[bits[1]] + "."
+		}
+	  }
       case "travel":
         return "You've arrived at your newest destination: " + hex.getName() + ".";
     }
@@ -634,6 +641,9 @@ const log = {
         let equipData = encyclopedia.itemData(details.equip);
         return "Equipment Repaired: " + capitalize(equipData.sho);
       }
+	  case "research": {
+		return "Research Complete: " + capitalize(bits[1]);
+	  }
 	  default:
         return null;
     }

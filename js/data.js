@@ -39,10 +39,11 @@ encyclopedia.items = {
     sho : "stonerose",
     lon : "This is a stone-grey mushroom with a long, straight stem sparsely covered in sharp thorns.  Its small cap is perched incongruously atop the stem like the head of a golf club.",
   },
+  // To do: add description
   wooltop : {
     type : "living-mushroom",
     tier : 2,
-    bsho : "",
+    bsho : "fluffy white mushroom",
     sho : "wooltop",
     lon : "bluh.",
   },
@@ -402,6 +403,7 @@ encyclopedia.buildings = {
         difficulty : 0,
         timer : 5,
         limit : 1,
+		completion : "Map researched. You may travel to other locations using the map in your journal."
       },
       "firestarting" : {
         desc : "How do I start fires without a lighter?",
