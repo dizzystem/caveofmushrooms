@@ -53,6 +53,7 @@ let player = {
     this.discovered = [];
     this.currentHex().discovered = true; //Delete this when we implement crafting; make them craft a map for it.
     this.i = new container("inv", {
+      mushroomKnife : 1,
       pickedblueleaf : 20,
       journal : 1,
       wisdomSandwich : 500,
@@ -60,10 +61,12 @@ let player = {
       moongillierPowder : 500,
       repairShroom : 100,
     });
-    this.equipment = [makeEquipment("mushroomKnife")]
-    this.loadout = {
-      tool : makeEquipment("mushroomKnife", {durability:50}),
-      hat : makeEquipment("blueleafHat"),
+    this.durability = {
+      mushroomKnife : 50,
+    };
+    this.equipment = {
+      tool : "mushroomKnife",
+      hat : "blueleafHat",
       gloves : null,
       shoes : null,
       food : null,
@@ -211,25 +214,26 @@ let player = {
     }
   },
   getEquip : function(slot){
-    if (!slot) return this.loadout;
-    if (this.loadout.hasOwnProperty(slot)) return this.loadout[slot];
+    if (!slot) return this.equipment;
+    if (this.equipment.hasOwnProperty(slot)) return this.equipment[slot];
     return null;
   },
-  setEquip : function(slot, index){
-    const existingEquip = player.getEquip(slot);
-    if (existingEquip) {
-      this.equipment.push(existingEquip);
-    }
-    if (index == null) {
-      this.loadout[slot] = null;
-    } else {
-      this.loadout[slot] = this.equipment.splice(index,1)[0];
-    }
+  setEquip : function(slot, equip){
+    if (this.equipment.hasOwnProperty(slot)) this.equipment[slot] = equip;
     this.recalculateStats();
   },
   recalculateStats : function(){
     playerStats = {gatherSpeed : 1, researchSpeed : 1, craftSpeed : 1, buildSpeed : 1};
     const itemNames = [];
+    // Add in equipment for processing
+    for (let slot in this.equipment) {
+      let equip = this.getEquip(slot);
+      let isBroken = this.durability.hasOwnProperty(equip) && (this.durability[equip] <= 0);
+      if (!equip || isBroken) {
+        continue;
+      }
+      itemNames.push(this.getEquip(slot));
+    }
     // Add in consumables
     for (let food in this.consumed) {
       itemNames.push(food);
@@ -250,43 +254,20 @@ let player = {
         playerStats[stat] += statData[stat];
       }
     }
-    // Add in equipment for processing
-    for (let slot in this.loadout) {
-      let equip = this.getEquip(slot);
-      // if equip.durability doesn't exist, equip.durability <= 0 is false
-      if (!equip || equip.durability <= 0) {
-        continue;
-      }
-      
-      if (equip.hasOwnProperty("stats")) {
-        for (let stat in equip.stats) {
-          if (!playerStats.hasOwnProperty(stat)) {
-            playerStats[stat] = 0;
-          }
-          playerStats[stat] += equip.stats[stat];
-        }
-      }
-      itemNames.push(this.getEquip(slot));
-    }
     if (this.action) {
       this.actionSpeed = this.getActionSpeed();
     }
   },
   handleDurability : function() {
-    // this.loadout["tool"].durability <= 0 implicitly checks if 
-    // this.loadout["tool"] has property durability. 
-    if (!this.loadout["tool"] || this.loadout["tool"].durability <= 0) {
+    if (!this.equipment["tool"] || this.durability[this.equipment["tool"]] <= 0) {
       return;
     }
     if (this.action) {
       if (this.action.name == "gather") {
-        this.loadout["tool"].durability--;
-        if (this.loadout["tool"].durability <= 0) {
-          if (this.loadout["tool"].breakable) {
-            this.loadout["tool"] = null;
-          }
+        this.durability[this.equipment["tool"]]--;
+        if (this.durability[this.equipment["tool"]] <= 0) {
           this.recalculateStats();
-          log.log("break-" + this.loadout["tool"]);
+          log.log("break-" + this.equipment["tool"]);
         }
         equipmentDisplay.redraw();
       }
@@ -319,8 +300,6 @@ let player = {
   },
 }
 
-// Note to self: this is important, and probably bad practice, but 
-// the player class refers to this global variable. So don't remove it. 
 let playerStats = {
 }
 
@@ -353,10 +332,9 @@ let encyclopedia = {
         ac.look = 'look()';
         ac.build = 'build()';
         break;
-      case "loc": {
-        let itemData = encyclopedia.itemData(item);
+      case "loc":
         ac.examine = 'examine("'+where+'","'+item+'")';
-        if (itemData.type === "living-mushroom"){
+        if (data.type === "living-mushroom"){
           if (player.hasDiscovered(item)){
             ac.gather = 'gather("'+item+'")';
           }
@@ -364,12 +342,11 @@ let encyclopedia = {
           ac.get = 'get("'+item+'")';
         }
         break;
-      }
-      case "inv": {
+      case "inv":
         let itemData = encyclopedia.itemData(item);
         ac.examine = 'examine("'+where+'","'+item+'")';
         if (itemData.type.includes("equipment")) {
-          ac.equip = 'equip("'+item+'",'+data+')';
+          ac.equip = 'equip("'+item+'")';
         }
         ac.drop = 'drop("'+item+'")';
         switch(item){
@@ -388,7 +365,6 @@ let encyclopedia = {
           ac.repair = 'repair("'+item+'")';
         }
         break;
-      }
     }
     
     let bits = [];

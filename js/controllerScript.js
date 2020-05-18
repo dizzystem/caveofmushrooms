@@ -61,27 +61,6 @@ function objectsEqual(a, b) {
   return true;
 }
 
-// Credits: https://medium.com/javascript-in-plain-english/how-to-deep-copy-objects-and-arrays-in-javascript-7c911359b089
-const copyObjects = (inObject) => {
-  let outObject, value, key
-
-  if (typeof inObject !== "object" || inObject === null) {
-    return inObject // Return the value if inObject is not an object
-  }
-
-  // Create an array or object to hold the values
-  outObject = Array.isArray(inObject) ? [] : {}
-
-  for (key in inObject) {
-    value = inObject[key]
-
-    // Recursively (deep) copy for nested objects, including arrays
-    outObject[key] = copyObjects(value)
-  }
-
-  return outObject
-}
-
 //============================Display objects=============================
 const map = {
   start(){
@@ -273,7 +252,7 @@ const locationDisplay = {
     }
     let txt = "<p id='location "+item+"'>There "+(num===1 ? "is" : "are")+" "+numword+" ";
     if (this.hovering === item){
-      txt += name+" "+encyclopedia.actionsFor(item, null, "loc");
+      txt += name+" "+encyclopedia.actionsFor(item, data, "loc");
     } else {
       txt += "<a onmouseover='locationDisplay.hovered(\""+item+"\")'>"+name+"</a>";
     }
@@ -342,7 +321,7 @@ const inventoryDisplay = {
       const name = inv[item]>1 ? data.plu : data.sho;
       const textObject = $("<p></p>").html("You have "+queryNum(inv[item]) + " ");
       if (this.hovering === item) {
-        const actionsHtml = encyclopedia.actionsFor(item, null, "inv")
+        const actionsHtml = encyclopedia.actionsFor(item, data, "inv")
         textObject.html(textObject.html() + name + " " + actionsHtml);
       } else {
         const link = $("<a></a>").html(name);
@@ -357,21 +336,6 @@ const inventoryDisplay = {
       } else {
         this.itemDisplay.append(textObject);
       }
-    }
-    for (let i = 0; i < player.equipment.length; i++) {
-      const equip = player.equipment[i]
-      const data = encyclopedia.itemData(equip.name);
-      const textObject = $("<p></p>").html("You have a ");
-      if (this.hovering === "equipment-"+i) {
-        const actionsHtml = encyclopedia.actionsFor(equip.name, i, "inv")
-        textObject.html(textObject.html() + data.sho + " " + actionsHtml);
-      } else {
-        const link = $("<a></a>").html(data.sho);
-        link.mouseover(() => inventoryDisplay.hovered("equipment-"+i));
-        textObject.append(link);
-      }
-      textObject.append(".");
-      this.equipDisplay.append(textObject);
     }
   },
   hovered(item){
@@ -391,11 +355,11 @@ const equipmentDisplay = {
     for (let slot in equipment){
       let item = equipment[slot];
       if (!item) continue;
-      let itemData = encyclopedia.itemData(item.name);
+      let itemData = encyclopedia.itemData(item);
       if (!itemData) continue;
       let displayText = itemData.sho;
       if (slot === "tool") {
-        const durability = Math.ceil(player.loadout.tool.durability * 100 / itemData.durability);
+        const durability = Math.ceil(player.durability[item] * 100 / itemData.durability);
         displayText += " (" + durability + "%)";
       }
       
@@ -867,7 +831,7 @@ function enter(thing){
   log.log("enter-"+thing);
 }
 
-function equip(thing, index) {
+function equip(thing) {
   const type = encyclopedia.itemData(thing).type;
   if (!type) {
     return;
@@ -877,7 +841,13 @@ function equip(thing, index) {
     return;
   }
   const slot = keywords[1];
-  player.setEquip(slot, index);
+  const existingEquip = player.getEquip(slot);
+  if (existingEquip) {
+    player.i.adjInv(existingEquip, 1);
+    player.setEquip(slot, null);
+  }
+  player.i.adjInv(thing, -1);
+  player.setEquip(slot, thing);
   inventoryDisplay.redraw();
   equipmentDisplay.redraw();
 }
@@ -920,6 +890,8 @@ function read(thing){
 }
 
 function remove(thing) {
+  const removedItem = player.getEquip(thing);
+  player.i.adjInv(removedItem, 1);
   player.setEquip(thing, null);
   inventoryDisplay.redraw();
   equipmentDisplay.redraw();
@@ -932,21 +904,21 @@ function repair(consumed) {
     log.log("error-repairnoequip");
     return;
   }
-  const equipData = encyclopedia.itemData(equip.name);
-  if (equip.durability === equipData.durability) {
+  const equipData = encyclopedia.itemData(equip);
+  if (player.durability[equip] === encyclopedia.itemData(equip).durability) {
     log.log("error-repairfullbar");
     return;
   }
   // Adds durability to the tool by fetching the repair attribute of the 
   // item consumed. Note that the tool's durability can't exceed its default value.
   const itemInfo = encyclopedia.itemData(consumed);
-  equip.durability += itemInfo.repair;
-  if (equip.durability > equipData.durability) {
-    equip.durability = equipData.durability;
+  player.durability[equip] += itemInfo.repair;
+  if (player.durability[equip] > encyclopedia.itemData(equip).durability) {
+    player.durability[equip] = encyclopedia.itemData(equip).durability;
   }
   player.i.adjInv(consumed, -1);
   player.recalculateStats();
-  log.log("repair", {"consumed" : consumed, "equip" : equip.name});
+  log.log("repair", {"consumed" : consumed, "equip" : equip});
   inventoryDisplay.redraw();
   equipmentDisplay.redraw();
 }
