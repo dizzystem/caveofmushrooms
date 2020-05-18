@@ -68,6 +68,7 @@ const map = {
     // I haven't refactored the canvas yet because it breaks the code somehow
     this.mapZoom = 100;
     this.shown = true;
+    this.lastUpdate = (new Date()).getTime();
     
     // Shorthand for getElementById
     this.cont = $("#minimap-cont");
@@ -80,7 +81,7 @@ const map = {
     this.ctx.fillStyle = "#333333";
     //this.interval = setInterval(redrawMinimap, 100);
     this.canvas.addEventListener("click", this.clicked);
-    this.redraw();
+    this.redraw(true);
   },
   
   mapX : function(xcoord){ return xcoord * this.mapZoom + this.canvas.width/2 },
@@ -128,7 +129,15 @@ const map = {
     this.ctx.stroke();
   },
   
-  redraw(){
+  redraw(force = false){
+    if (!force) {
+      let newTimestamp = (new Date()).getTime();
+      let timeDifference = newTimestamp - this.lastUpdate;
+      if (timeDifference < 500) {
+        return;
+      }
+      this.lastUpdate = newTimestamp;
+    }
     // Use css method to modify style properties
     this.cont.css( {display:'default'} );
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -181,7 +190,7 @@ const map = {
     this.mapZoom += adj;
     if (this.mapZoom < 50) this.mapZoom = 50;
     if (this.mapZoom > 150) this.mapZoom = 150;
-    this.redraw();
+    this.redraw(true);
   }
 }
 
@@ -190,8 +199,17 @@ const actionDisplay = {
     this.display = $("#actionDisplay");
     this.progressBackground = $("#progressBackground");
     this.progressBar = $("#progressBar");
+    this.lastUpdate = (new Date()).getTime();
   },
-  redraw(){
+  redraw(force = false){
+    if (!force) {
+      let newTimestamp = (new Date()).getTime();
+      let timeDifference = newTimestamp - this.lastUpdate;
+      if (timeDifference < 500) {
+        return;
+      }
+      this.lastUpdate = newTimestamp;
+    }
     let action = player.currentAction();
     let txt;
     if (!action) {
@@ -236,6 +254,7 @@ const locationDisplay = {
   start(){
     this.display = $("#locationDisplay");
     this.hovering = null;
+    this.lastUpdate = (new Date()).getTime();
   },
   txtFor(item){
     let num = player.currentHex().i.getInv(item);
@@ -259,7 +278,15 @@ const locationDisplay = {
     txt += " "+pos+" here.</p>";
     return txt;
   },
-  redraw(){
+  redraw(force = false){
+    if (!force) {
+      let newTimestamp = (new Date()).getTime();
+      let timeDifference = newTimestamp - this.lastUpdate;
+      if (timeDifference < 500) {
+        return;
+      }
+      this.lastUpdate = newTimestamp;
+    }
     let hex = player.currentHex();
     let inv = hex.i.getInv();
     let txt;
@@ -276,7 +303,7 @@ const locationDisplay = {
   },
   hovered(item){
     this.hovering = item;
-    this.redraw();
+    this.redraw(true);
   },
 }
 
@@ -305,10 +332,19 @@ const inventoryDisplay = {
     this.equipDisplay = $("#inventory-equip");
     this.itemDisplay = $("#inventory-item");
     this.hovering = null;
+    this.lastUpdate = (new Date()).getTime();
   },
-  redraw(){
+  redraw(force = false){
     // (danielnyan) Can optimise by only redrawing the elements 
     // that have changed, instead of redrawing everything.
+    if (!force) {
+      let newTimestamp = (new Date()).getTime();
+      let timeDifference = newTimestamp - this.lastUpdate;
+      if (timeDifference < 500) {
+        return;
+      }
+      this.lastUpdate = newTimestamp;
+    }
     
     // This also empties the contents
     this.equipDisplay.html("<h4>Equipment</h4>");
@@ -340,7 +376,7 @@ const inventoryDisplay = {
   },
   hovered(item){
     this.hovering = item;
-    this.redraw();
+    this.redraw(true);
   },
 }
 
@@ -348,8 +384,17 @@ const equipmentDisplay = {
   start(){
     this.display = $("#equipment");
     this.hovering = null;
+    this.lastUpdate = (new Date()).getTime();
   },
-  redraw(){
+  redraw(force = false){
+    if (!force) {
+      let newTimestamp = (new Date()).getTime();
+      let timeDifference = newTimestamp - this.lastUpdate;
+      if (timeDifference < 500) {
+        return;
+      }
+      this.lastUpdate = newTimestamp;
+    }
     let equipment = player.getEquip();
     let txt = "";
     for (let slot in equipment){
@@ -374,7 +419,7 @@ const equipmentDisplay = {
   },
   hovered(item){
     this.hovering = item;
-    this.redraw();
+    this.redraw(true);
   },
 }
 
@@ -754,9 +799,9 @@ function drawingSetup(){
   log.start();
   popup.start();
   
-  locationDisplay.redraw();
-  inventoryDisplay.redraw();
-  equipmentDisplay.redraw();
+  locationDisplay.redraw(true);
+  inventoryDisplay.redraw(true);
+  equipmentDisplay.redraw(true);
 }
 
 //=============================Click functions=============================
@@ -799,8 +844,8 @@ function research(thing, building){
 //Todo: Implement "drop multi" and "drop all"
 function drop(thing){
   if (world.moveItem(thing, player.i, player.currentHex().i, 1)){
-    locationDisplay.redraw();
-    inventoryDisplay.redraw();
+    locationDisplay.redraw(true);
+    inventoryDisplay.redraw(true);
   }
 }
 
@@ -819,7 +864,7 @@ function eat(thing) {
   }
   player.i.adjInv(thing, -1);
   log.log("eat-" + thing);
-  inventoryDisplay.redraw();
+  inventoryDisplay.redraw(true);
 }
 
 //For entering building menus.
@@ -848,14 +893,14 @@ function equip(thing) {
   }
   player.i.adjInv(thing, -1);
   player.setEquip(slot, thing);
-  inventoryDisplay.redraw();
-  equipmentDisplay.redraw();
+  inventoryDisplay.redraw(true);
+  equipmentDisplay.redraw(true);
 }
 
 function examine(where, thing){
   if (where === "loc" && player.discover(thing)){
     log.log("examine-"+thing, "discover");
-    locationDisplay.redraw();
+    locationDisplay.redraw(true);
   } else {
     log.log("examine-"+thing);
   }
@@ -867,8 +912,8 @@ function gather(thing){
 
 function get(thing){
   if (world.moveItem(thing, player.currentHex().i, player.i, 1)){
-    locationDisplay.redraw();
-    inventoryDisplay.redraw();
+    locationDisplay.redraw(true);
+    inventoryDisplay.redraw(true);
     let itemInfo = encyclopedia.itemData(thing);
     if (itemInfo && itemInfo.type === "equipment-tool") {
       if (!player.durability.hasOwnProperty(thing)) {
@@ -893,11 +938,11 @@ function remove(thing) {
   const removedItem = player.getEquip(thing);
   player.i.adjInv(removedItem, 1);
   player.setEquip(thing, null);
-  inventoryDisplay.redraw();
-  equipmentDisplay.redraw();
+  inventoryDisplay.redraw(true);
+  equipmentDisplay.redraw(true);
 }
 
-function repair(consumed) {
+function repair(consumed, force=true) {
   const equip = player.getEquip("tool");
   // Prevent repairs if tool isn't equipped, or if it's at full durability.
   if (equip === null) {
@@ -919,8 +964,8 @@ function repair(consumed) {
   player.i.adjInv(consumed, -1);
   player.recalculateStats();
   log.log("repair", {"consumed" : consumed, "equip" : equip});
-  inventoryDisplay.redraw();
-  equipmentDisplay.redraw();
+  inventoryDisplay.redraw(force);
+  equipmentDisplay.redraw(force);
 }
 
 function showMap() {

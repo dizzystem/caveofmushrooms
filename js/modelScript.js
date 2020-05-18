@@ -132,11 +132,11 @@ let player = {
         this.adjX(action.details.x);
         this.adjY(action.details.y);
         world.discover(this.getX(), this.getY());
-        map.redraw();
+        map.redraw(true);
         log.clear();
         log.log("travel");
         locationDisplay.hovering = null;
-        locationDisplay.redraw();
+        locationDisplay.redraw(true);
         this.action = null;
         break;
       case "gather":
@@ -147,7 +147,7 @@ let player = {
         if (this.currentHex().i.getInv(thing) <= 0){
           this.action = null;
           log.log("depleted-"+thing);
-          locationDisplay.redraw();
+          locationDisplay.redraw(true);
         }
         break;
       case "build":
@@ -161,7 +161,7 @@ let player = {
           break;
         }
         this.i.pay(materials);
-        inventoryDisplay.redraw();
+        inventoryDisplay.redraw(true);
         hex.addBuilding(thing);
         log.log("built-"+thing);
         this.action = null;
@@ -334,7 +334,7 @@ let player = {
         this.completeAction(this.action);
       }
       this.handleDurability();
-      actionDisplay.redraw();
+      actionDisplay.redraw(true);
     }
     // Decreases the time remaining for buffs
     let buffExpired = false;
