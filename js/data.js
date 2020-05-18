@@ -80,6 +80,7 @@ encyclopedia.items = {
     tier : 2,
     bsho : "glowing green mushroom",
     sho : "lightpuff",
+    plu : "lightpuffs",
     lon : "This mushroom has a round puffy cap that glows a faint eerie green in the dark.",
   },
   ambershine : {
@@ -166,6 +167,7 @@ encyclopedia.items = {
     type : "picked-mushroom",
     tier : 2,
     sho : "picked lightpuff",
+    plu : "picked lightpuffs",
     lon : "A glowing green mushroom that's been cut neatly at the base.",
   },
   pickedambershine : {
@@ -233,8 +235,9 @@ encyclopedia.items = {
   mushroomKnife : {
     type : "equipment-tool",
     sho : "mushroom knife",
+    plu : "mushroom knives",
     lon : "This is a curved knife used for gathering mushrooms.",
-    stats : {gatherSpeed : 9},
+    stats : {add_constant_gatherSpeed : 9},
     durability : 5000,
   },
   blueleafHat : {
@@ -260,21 +263,21 @@ encyclopedia.items = {
     sho : "wisdom sandwich",
     lon : "A sandwich that grants increased construction and research speed. This is a testing item, so if you have it, chances are that you're hacking.",
     duration : 100,
-    stats : {buildSpeed : 9, researchSpeed : 9}
+    stats : {mult_constant_buildSpeed : 9, mult_constant_researchSpeed : 9}
   },
   moongillPowder : {
     type : "food",
     sho : "moongill powder",
     lon : "A pale white powder that tingles strongly to the touch.  When swallowed, it gives a short burst of manic energy which increases your mushroom gathering speed.",
     duration : 5,
-    stats : {gatherSpeed : 999}
+    stats : {mult_constant_gatherSpeed : 19}
   },
   moongillierPowder : {
     type : "food",
     sho : "moongillier powder",
     lon : "basically crack. this is also a testing item",
     duration : 9001,
-    stats : {gatherSpeed : 999, craftSpeed : 999}
+    stats : {mult_constant_gatherSpeed : 19, mult_constant_craftSpeed : 19}
   },
   
   //======================Utility=====================
@@ -376,6 +379,8 @@ encyclopedia.buildings = {
     },
     durability : 500,
     recipes : {
+      // To do: craft whetstones from toolbench, not knives. 
+      // That, and limit the number of things you can craft. 
       "basic knife" : {
         materials : { stoneroseThorn : 20, },
         products : { mushroomKnife : 1 },
@@ -414,7 +419,7 @@ encyclopedia.buildings = {
         difficulty : 0,
         timer : 5,
         limit : 1,
-		completion : "Map researched. You may travel to other locations using the map in your journal."
+        completion : "Map researched. You may travel to other locations using the map in your journal."
       },
       "firestarting" : {
         desc : "How do I start fires without a lighter?",

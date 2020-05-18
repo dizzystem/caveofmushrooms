@@ -3,11 +3,11 @@ function pluralize(str){
   switch (str[str.length-1]){
     case "f":
       return str.slice(0, str.length-1)+"ves";
-    case "fe":
-      return str.slice(0, str.length-2)+"ves";
     case "y":
       return str.slice(0, str.length-1)+"ies";
     case "s":
+      return str+"es";
+    case "h":
       return str+"es";
   }
   return str+"s";

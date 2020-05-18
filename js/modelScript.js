@@ -53,7 +53,6 @@ let player = {
     this.discovered = [];
     this.currentHex().discovered = true; //Delete this when we implement crafting; make them craft a map for it.
     this.i = new container("inv", {
-      mushroomKnife : 1,
       pickedblueleaf : 20,
       journal : 1,
       wisdomSandwich : 500,
@@ -62,7 +61,7 @@ let player = {
       repairShroom : 100,
     });
     this.durability = {
-      mushroomKnife : 50,
+      mushroomKnife : 5000,
     };
     this.equipment = {
       tool : "mushroomKnife",
@@ -222,8 +221,7 @@ let player = {
     if (this.equipment.hasOwnProperty(slot)) this.equipment[slot] = equip;
     this.recalculateStats();
   },
-  recalculateStats : function(){
-    playerStats = {gatherSpeed : 1, researchSpeed : 1, craftSpeed : 1, buildSpeed : 1};
+  getActiveItems : function() {
     const itemNames = [];
     // Add in equipment for processing
     for (let slot in this.equipment) {
@@ -238,7 +236,23 @@ let player = {
     for (let food in this.consumed) {
       itemNames.push(food);
     }
-    for (let itemName of itemNames) {
+    return itemNames;
+  },
+  parseSkill : function(skillStr) {
+    let ind1 = skillStr.indexOf("_");
+    let ind2 = skillStr.lastIndexOf("_");
+    if (ind1 == -1 || ind2 == -1 || ind1 == ind2)
+      throw("Invalid skill: "+skillStr+".")
+    return {
+      op: skillStr.slice(0, ind1),
+      from: skillStr.slice(ind1+1, ind2),
+      to: skillStr.slice(ind2+1)
+    }
+  },
+  generateSkillMetadata : function() {
+    let metadata = {}
+    // Add in all items that are equipped or consumed. 
+    for (let itemName of this.getActiveItems()) {
       const itemData = encyclopedia.itemData(itemName);
       if (!itemData) {
         continue;
@@ -247,13 +261,51 @@ let player = {
       if (!statData) {
         continue;
       }
+      // Here we parse all the strings and convert them into a nested object.
+      // metadata[the stat to be affected][add/multiply][the stat that affects, or "constant"]
       for (let stat in statData) {
-        if (!playerStats.hasOwnProperty(stat)) {
-          playerStats[stat] = 0;
-        }
-        playerStats[stat] += statData[stat];
+        let data = this.parseSkill(stat);
+        let amt = statData[stat];
+        if (metadata[data.to] === undefined)
+          metadata[data.to] = {};
+        if (metadata[data.to][data.op] === undefined)
+          metadata[data.to][data.op] = {};
+        if (metadata[data.to][data.op][data.from] === undefined)
+          metadata[data.to][data.op][data.from] = 0;
+        metadata[data.to][data.op][data.from] += amt;
       }
     }
+    return metadata;
+  },
+  recalculateStats : function(){
+    playerStats = {constant : 1, gatherSpeed : 1, researchSpeed : 1, craftSpeed : 1, buildSpeed : 1}
+    let metadata = this.generateSkillMetadata();
+    for (let stat in metadata){
+      if (metadata[stat] === undefined)
+        continue;
+      let base = 0;
+      let multiplier = 1;
+      //Do in order: addition then multiplication.
+      for (let i=0;i<2;i++){
+        let op = ["add", "mult"][i];
+        if (metadata[stat][op] === undefined)
+          continue;
+        for (let bonus in metadata[stat][op]){
+          if (playerStats[bonus] === undefined)
+            continue;
+          let amt = metadata[stat][op][bonus];
+          if (playerStats[stat] === undefined)
+            playerStats[stat] = 0;
+          if (op == "add")
+            base += playerStats[bonus] * amt;
+          if (op == "mult")
+            multiplier += playerStats[bonus] * amt;
+        }
+      }
+      playerStats[stat] += base 
+      playerStats[stat] *= multiplier;
+    }
+    delete playerStats.constant;
     if (this.action) {
       this.actionSpeed = this.getActionSpeed();
     }
@@ -300,6 +352,8 @@ let player = {
   },
 }
 
+// Note: do not delete this. It is a global variable used by 
+// the player under stat recalculation. 
 let playerStats = {
 }
 
