@@ -349,6 +349,11 @@ let player = {
     if (buffExpired) {
       this.recalculateStats();
     }
+    if (buffExpired) {
+      equipmentDisplay.redraw(true);
+    } else if (Object.keys(this.consumed).length > 0) {
+      equipmentDisplay.redraw();
+    }
   },
 }
 

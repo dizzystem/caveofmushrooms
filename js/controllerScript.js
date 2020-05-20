@@ -396,7 +396,7 @@ const equipmentDisplay = {
       this.lastUpdate = newTimestamp;
     }
     let equipment = player.getEquip();
-    let txt = "";
+    let txt = "<h4>Equipment</h4>";
     for (let slot in equipment){
       let item = equipment[slot];
       if (!item) continue;
@@ -414,6 +414,11 @@ const equipmentDisplay = {
       } else {
         txt += "<p>"+capitalize(slot)+": <a onmouseover='equipmentDisplay.hovered(\""+slot+"\")'>"+displayText+"</a></p>";
       }
+    }
+    txt += "<h4>Consumed</h4>";
+    for (let food in player.consumed) {
+      let foodName = encyclopedia.items[food].sho;
+      txt += "<p>"+ capitalize(foodName)+": (" + player.consumed[food]/10 + ")</p>";
     }
     this.display.html(txt);
   },
