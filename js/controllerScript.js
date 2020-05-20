@@ -590,6 +590,11 @@ const log = {
         let data = encyclopedia.itemData(thing);
         return "The effects of " + data.sho + " has expired.";
       }
+      case "expiresoon": {
+        thing = bits[1];
+        let data = encyclopedia.itemData(thing);
+        return "The effects of " + data.sho + " will expire in 15 seconds.";
+      }
       case "journal":
         txt = "<p>You flip through your journal. ";
         if (player.discovered.length){
@@ -679,6 +684,11 @@ const log = {
         thing = bits[1];
         let data = encyclopedia.itemData(thing);
         return "Expired: " + capitalize(data.sho); 
+      }
+      case "expiresoon": {
+        thing = bits[1];
+        let data = encyclopedia.itemData(thing);
+        return "Expiring Soon: " + capitalize(data.sho);
       }
       case "journal":
         return "Journal";
@@ -856,13 +866,10 @@ function drop(thing){
 
 function eat(thing) {
   const itemData = encyclopedia.itemData(thing)
-  if (!itemData) {
+  if (!itemData || itemData.duration === undefined) {
     return;
   }
   const type = itemData.type;
-  if (!type || type !== "food") {
-    return;
-  }
   if (itemData.duration) {
     player.consumed[thing] = itemData.duration * fps;
     player.recalculateStats();

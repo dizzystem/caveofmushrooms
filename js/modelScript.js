@@ -344,6 +344,8 @@ let player = {
         log.log("expire-" + food);
         delete this.consumed[food];
         buffExpired = true;
+      } else if (this.consumed[food] == 150) {
+        log.log("expiresoon-" + food);
       }
     }
     if (buffExpired) {

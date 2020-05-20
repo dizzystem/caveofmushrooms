@@ -169,6 +169,8 @@ encyclopedia.items = {
     sho : "picked lightpuff",
     plu : "picked lightpuffs",
     lon : "A glowing green mushroom that's been cut neatly at the base.",
+    duration : 30,
+    stats : {add_constant_light : 1}
   },
   pickedambershine : {
     type : "picked-mushroom",
@@ -441,6 +443,9 @@ encyclopedia.enter = {
         return true;
       }
     }
+    if (playerStats.light >= 1) {
+      return true;
+    }
     log.log("error-needitem-light");
     return false;
   },
@@ -486,7 +491,8 @@ encyclopedia.hexes = {
   },
   h1_3 : {
     mushrooms : {
-	  "fluffshroom" : 500
+	  "fluffshroom" : 500,
+    "lightpuff" : 500
 	},
     colour : "#C08180",
   },
@@ -513,6 +519,7 @@ encyclopedia.hexes = {
     mushrooms : {},
   },
   h0_5 : {
+    canEnter : encyclopedia.enter.needsTorch,
     mushrooms : {},
   },
 }
