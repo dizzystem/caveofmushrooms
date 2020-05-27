@@ -479,21 +479,21 @@ encyclopedia.hexes = {
     mushrooms : {
 	  "blueleaf" : 500,
 	  "poolcap" : Infinity
-	},
+    },
     colour : "#AAAAAA",
   },
   h0_3 : {
     mushrooms : {
 	  "stonerose" : 500,
 	  "zestnub" : 500
-	},
+    },
     colour : "#B5B26A",
   },
   h1_3 : {
     mushrooms : {
 	  "fluffshroom" : 500,
     "lightpuff" : 500
-	},
+    },
     colour : "#C08180",
   },
   h2_2 : {
@@ -506,12 +506,20 @@ encyclopedia.hexes = {
     mushrooms : {},
     canEnter : encyclopedia.enter.needsBoat,
     colour : "#8888AA",
+    fallback : {
+      hex : [2, 2],
+      reason : "boat"
+    }
   },
   h4_2 : {
     name : "Flooded Lake",
     mushrooms : {},
     canEnter : encyclopedia.enter.needsBoat,
     colour : "#8888AA",
+    fallback : {
+      hex : [2, 2],
+      reason : "boat"
+    }
   },
   
   //Zone 3
@@ -523,5 +531,9 @@ encyclopedia.hexes = {
     mushrooms : {
       "poolcap" : Infinity
     },
+    fallback : {
+      hex : [1, 4],
+      reason : "torch"
+    }
   },
 }

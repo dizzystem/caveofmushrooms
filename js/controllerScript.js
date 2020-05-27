@@ -596,7 +596,14 @@ const log = {
         return "The effects of " + data.sho + " will expire in 15 seconds.";
       }
       case "fallback": 
-        return "Falling Back."
+        switch (details.reason) {
+          case "torch":
+            return "You ran out of light, so you are forced to retreat to " + hex.getName() + ".";
+          case "boat":
+            return "Your boat broke, so you have been washed away to " + hex.getName() + ".";
+          default:
+            return "You can no longer stay in this area. Falling back to " + hex.getName() + ".";
+        }
       case "journal":
         txt = "<p>You flip through your journal. ";
         if (player.discovered.length){

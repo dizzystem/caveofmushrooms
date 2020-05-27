@@ -13,6 +13,7 @@ let world = {
         this.hexes[i][j] = new hex('ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i]+("0"+j).slice(-2), j, i);
         this.hexes[i][j].name = data.name;
         this.hexes[i][j].canEnter = data.canEnter;
+        this.hexes[i][j].fallback = data.fallback;
         this.hexes[i][j].addMushrooms(data.mushrooms);
         if (data.colour) this.hexes[i][j].colour = data.colour;
         else this.hexes[i][j].colour = "#222222";
@@ -331,12 +332,13 @@ let player = {
     }
   },
   moveToFallback : function() {
-    this.x = 1;
-    this.y = 2;
+    let details = this.currentHex().fallback;
+    this.x = details.hex[0];
+    this.y = details.hex[1];
     world.discover(this.getX(), this.getY());
     map.redraw(true);
     log.clear();
-    log.log("fallback");
+    log.log("fallback", details);
     locationDisplay.hovering = null;
     locationDisplay.redraw(true);
     this.action = null;
