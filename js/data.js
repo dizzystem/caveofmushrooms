@@ -520,6 +520,8 @@ encyclopedia.hexes = {
   },
   h0_5 : {
     canEnter : encyclopedia.enter.needsTorch,
-    mushrooms : {},
+    mushrooms : {
+      "poolcap" : Infinity
+    },
   },
 }

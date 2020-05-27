@@ -309,6 +309,11 @@ let player = {
     if (this.action) {
       this.actionSpeed = this.getActionSpeed();
     }
+    if (this.currentHex().canEnter !== undefined) {
+      if (!this.currentHex().canEnter()) {
+        this.moveToFallback();
+      };
+    }
   },
   handleDurability : function() {
     if (!this.equipment["tool"] || this.durability[this.equipment["tool"]] <= 0) {
@@ -324,6 +329,18 @@ let player = {
         equipmentDisplay.redraw();
       }
     }
+  },
+  moveToFallback : function() {
+    this.x = 1;
+    this.y = 2;
+    world.discover(this.getX(), this.getY());
+    map.redraw(true);
+    log.clear();
+    log.log("fallback");
+    locationDisplay.hovering = null;
+    locationDisplay.redraw(true);
+    this.action = null;
+    actionDisplay.redraw(true);
   },
   tick : function(){
     // Increases the progress of actions
@@ -350,8 +367,6 @@ let player = {
     }
     if (buffExpired) {
       this.recalculateStats();
-    }
-    if (buffExpired) {
       equipmentDisplay.redraw(true);
     } else if (Object.keys(this.consumed).length > 0) {
       equipmentDisplay.redraw();

@@ -595,6 +595,8 @@ const log = {
         let data = encyclopedia.itemData(thing);
         return "The effects of " + data.sho + " will expire in 15 seconds.";
       }
+      case "fallback": 
+        return "Falling Back."
       case "journal":
         txt = "<p>You flip through your journal. ";
         if (player.discovered.length){
@@ -690,6 +692,8 @@ const log = {
         let data = encyclopedia.itemData(thing);
         return "Expiring Soon: " + capitalize(data.sho);
       }
+      case "fallback":
+        return "Falling Back";
       case "journal":
         return "Journal";
       case "look":
