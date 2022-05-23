@@ -113,7 +113,14 @@ encyclopedia.items = {
     type : "picked-mushroom",
     tier : 2,
     sho : "bowl of pure water",
-    lon : "A bowl made of light pink glossy mushroom.  There's still a bit of stem attached to the bottom.",
+    lon : "A bowl made of light pink glossy mushroom.  It's full of clear drinkable water.",
+    edible : {
+      verb : "drink",
+      desc : "You drink the water out of the bowl, leaving you with an empty poolcap mushroom.",
+      giveItem : {
+        emptypoolcap : 1,
+      }
+    }
   },
   pickedsilkveil : {
     type : "picked-mushroom",
@@ -191,6 +198,11 @@ encyclopedia.items = {
     sho : "blueleaf ink",
     lon : "Some dark blue liquid distilled from blueleaf mushrooms.",
   },
+  emptypoolcap : {
+    type : "resource",
+    sho : "empty bowl",
+    lon : "A bowl made of light pink glossy mushroom.  There's still a bit of stem attached to the bottom.",
+  },
   silkveilVeil : {
     type : "resource",
     sho : "silkveil veil",
@@ -257,29 +269,51 @@ encyclopedia.items = {
   blueleafTea : {
     type : "food",
     sho : "blueleaf tea",
-    lon : "Some delicious blue tea, served in a poolcap.  It can stain your teeth blue.",
+    lon : "Some delicious blue tea, served in a poolcap.  It can stain your teeth blue.  When "+
+      "drunk, it slightly increases your building and research speed.",
+    edible : {
+      verb : "drink",
+      desc : "The blueleaf tea tastes strongly bitter but very refreshing.  You feel energized.",
+      duration : 120,
+      stats : {mult_constant_buildSpeed : 0.2, mult_constant_researchSpeed : 0.2},
+      giveItem : {
+        emptypoolcap : 1,
+      }
+    }
   },
   // Currently item bonuses don't stack, but instead, they refresh. Upcoming feature?
   wisdomSandwich : {
     type : "food",
     sho : "wisdom sandwich",
     lon : "A sandwich that grants increased construction and research speed. This is a testing item, so if you have it, chances are that you're hacking.",
-    duration : 100,
-    stats : {mult_constant_buildSpeed : 9, mult_constant_researchSpeed : 9}
+    edible : {
+      verb : "eat",
+      duration : 120,
+      stats : {mult_constant_buildSpeed : 9, mult_constant_researchSpeed : 9}
+    }
   },
   moongillPowder : {
     type : "food",
     sho : "moongill powder",
-    lon : "A pale white powder that tingles strongly to the touch.  When swallowed, it gives a short burst of manic energy which increases your mushroom gathering speed.",
-    duration : 5,
-    stats : {mult_constant_gatherSpeed : 19}
+    lon : "A pale white powder that tingles strongly to the touch.  When swallowed, it gives "+
+      "a short burst of manic energy which increases your mushroom gathering speed.",
+    edible : {
+      verb : "eat",
+      desc : "The powder goes down with some difficulty, but just a minute after you manage "+
+        "to swallow it all, a surge of incredible power fills your muscles.",
+      duration : 60,
+      stats : {mult_constant_gatherSpeed : 1}
+    }
   },
   moongillierPowder : {
     type : "food",
     sho : "moongillier powder",
     lon : "basically crack. this is also a testing item",
-    duration : 9001,
-    stats : {mult_constant_gatherSpeed : 19, mult_constant_craftSpeed : 19}
+    edible : {
+      verb : "eat",
+      duration : 9001,
+      stats : {mult_constant_gatherSpeed : 19, mult_constant_craftSpeed : 19}
+    }
   },
   
   //======================Utility=====================
@@ -291,6 +325,21 @@ encyclopedia.items = {
   },
 }
 
+encyclopedia.stats = {
+  gatherSpeed : {
+    sho : "gathering speed"
+  },
+  researchSpeed : {
+    sho : "research speed"
+  },
+  craftSpeed : {
+    sho : "crafting speed"
+  },
+  buildSpeed : {
+    sho : "building speed"
+  }
+}
+
 encyclopedia.buildings = {
   cookingFire : {
     sho : "cooking fire",
@@ -298,80 +347,19 @@ encyclopedia.buildings = {
       pickedblueleaf : 10,
     },
     durability : 50,
-    recipes : {
-      "blueleaf tea" : { 
-        desc : "Make some tea by boiling blueleaf mushrooms in water.",
-        materials : {
-          pickedblueleaf : 2,
-          pickedpoolcap : 1,
-        },
-        products : { blueleafTea : 1, },
-      },
-      "blueleaf ink" : {
-        desc : "Make some ink by distilling this tea.",
-        materials : {
-          blueleafTea : 5,
-          pickedpoolcap : 1,
-        },
-        products : { blueleafInk : 1, },
-      },
-      torch : {
-        materials : {
-          pickedblueleaf : 10,
-          stoneroseStem : 1,
-        },
-        products : { torch : 1 },
-        difficulty : 0,
-        timer : 5,
-      },
+    crafting : {
+      fire : 1
     },
     timer: 30,
   },
-  //make a reinforced poolcap as structural material
-  //grind holegrain in reinforced poolcap
-  //a way to reshape poolcap
   /*choppingBoard : {
     sho : "chopping board",
     materials : {
       pickedblueleaf : 10,
     },
     durability : 500,
-    recipes : {
-      "silkveil extraction" : {
-        materials : { pickedsilkveil : 1, },
-        products : { silkveilVeil : 2, },
-      },
-      "glowring extraction" : { 
-        materials : { pickedglowring : 1, },
-        products : { glowfluid : 1, },
-      },
-      "stonerose extraction" : { 
-        materials : { pickedstonerose : 1, },
-        products : {
-          stoneroseStem : 1,
-          stoneroseThorn : 10,
-        },
-      },
-      "holegrain extraction" : { 
-        materials : { pickedholegrain : 1, },
-        products : { holegrainSpore : 10, },
-      },
-      "silverstack extraction" : { 
-        materials : { pickedsilverstack : 1, },
-        products : { silverstackLog : 1, },
-      },
-      "cavecherry extraction" : { 
-        materials : { pickedcavecherry : 1, },
-        products : { cavecherrySlice : 3, },
-      },
-      "zestnub extraction" : { 
-        materials : { pickedzestnub : 1, },
-        products : { zestnubNub : 3, },
-      },
-      "poolcap extraction" : { 
-        materials : { pickedpoolcap : 1, },
-        products : { poolcapCap : 1, },
-      },
+    crafting : {
+      knife : 1
     },
   },*/
   toolBench : {
@@ -380,31 +368,8 @@ encyclopedia.buildings = {
       stoneroseStem : 10,
     },
     durability : 500,
-    recipes : {
-      // To do: craft whetstones from toolbench, not knives. 
-      // That, and limit the number of things you can craft. 
-      "basic knife" : {
-        materials : { stoneroseThorn : 20, },
-        products : { mushroomKnife : 1 },
-        difficulty : 0,
-        timer : 5,
-      },
-      "basic lantern" : {
-        materials : {
-          lightpuffGlobe : 10,
-          rope : 5,
-        },
-        products : { "basic lantern" : 1 },
-        difficulty : 0,
-        timer : 5,
-      },
-      "raft" : {
-        materials : {
-          pickedpoolcap : 10,
-          rope : 5, //glue?
-        },
-        products : { "raft" : 1 },
-      },
+    crafting : {
+      bench : 1
     }
   },
   makeshiftTable : {
@@ -413,26 +378,150 @@ encyclopedia.buildings = {
       pickedpoolcap : 10,
     },
     research : {
-      "map" : {
-        desc : "Draw a map of this cave, so I can keep track of where I've explored.",
-        materials : {
-          blueleafInk : 10,
-        },
-        difficulty : 0,
-        timer : 5,
-        limit : 1,
-        completion : "Map researched. You may travel to other locations using the map in your journal."
-      },
-      "firestarting" : {
-        desc : "How do I start fires without a lighter?",
-        materials : {
-          pickedblueleaf : 10,
-        },
-        difficulty : 0,
-        timer : 5,
-        limit : 1,
-      },
+      table : 1
     },
+    timer : 30
+  },
+}
+
+encyclopedia.crafting = {
+  //========================Cooking=======================
+  "blueleaf tea" : { 
+    desc : "Make some tea by boiling blueleaf mushrooms in water.",
+    materials : {
+      pickedblueleaf : 2,
+      pickedpoolcap : 1,
+    },
+    products : { blueleafTea : 1, },
+    building : {
+      fire : 1
+    },
+  },
+  "blueleaf ink" : {
+    desc : "Make some ink by distilling this tea.",
+    materials : {
+      blueleafTea : 5,
+      pickedpoolcap : 1,
+    },
+    products : { blueleafInk : 1, },
+    building : {
+      fire : 1
+    },
+  },
+  torch : {
+    materials : {
+      pickedblueleaf : 10,
+      stoneroseStem : 1,
+    },
+    products : { torch : 1 },
+    building : {
+      fire : 1
+    },
+    difficulty : 0,
+    timer : 5,
+  },
+  //=======================Crafting========================
+  // To do: craft whetstones from toolbench, not knives. 
+  // That, and limit the number of things you can craft. 
+  "basic knife" : {
+    materials : { stoneroseThorn : 20, },
+    products : { mushroomKnife : 1 },
+    building : {
+      bench : 1
+    },
+    difficulty : 0,
+    timer : 5,
+  },
+  "basic lantern" : {
+    materials : {
+      lightpuffGlobe : 10,
+      rope : 5,
+    },
+    products : { "basic lantern" : 1 },
+    building : {
+      bench : 1
+    },
+    difficulty : 0,
+    timer : 5,
+  },
+  "raft" : {
+    materials : {
+      pickedpoolcap : 10,
+      rope : 5, //glue?
+    },
+    products : { "raft" : 1 },
+    building : {
+      bench : 1
+    },
+  }
+  //====================Cutting=========================
+  //make a reinforced poolcap as structural material
+  //grind holegrain in reinforced poolcap
+  //a way to reshape poolcap
+  /*
+  "silkveil extraction" : {
+    materials : { pickedsilkveil : 1, },
+    products : { silkveilVeil : 2, },
+  },
+  "glowring extraction" : { 
+    materials : { pickedglowring : 1, },
+    products : { glowfluid : 1, },
+  },
+  "stonerose extraction" : { 
+    materials : { pickedstonerose : 1, },
+    products : {
+      stoneroseStem : 1,
+      stoneroseThorn : 10,
+    },
+  },
+  "holegrain extraction" : { 
+    materials : { pickedholegrain : 1, },
+    products : { holegrainSpore : 10, },
+  },
+  "silverstack extraction" : { 
+    materials : { pickedsilverstack : 1, },
+    products : { silverstackLog : 1, },
+  },
+  "cavecherry extraction" : { 
+    materials : { pickedcavecherry : 1, },
+    products : { cavecherrySlice : 3, },
+  },
+  "zestnub extraction" : { 
+    materials : { pickedzestnub : 1, },
+    products : { zestnubNub : 3, },
+  },
+  "poolcap extraction" : { 
+    materials : { pickedpoolcap : 1, },
+    products : { poolcapCap : 1, },
+  },
+  */
+}
+
+encyclopedia.research = {
+  "map" : {
+    desc : "Draw a map of this cave, so I can keep track of where I've explored.",
+    materials : {
+      blueleafInk : 10,
+    },
+    building : {
+      table : 1
+    },
+    difficulty : 0,
+    timer : 5,
+    limit : 1,
+    completion : "Map researched. You may travel to other locations using the map in your journal."
+  },
+  "firestarting" : {
+    desc : "How do I start fires without a lighter?",
+    materials : {
+      pickedblueleaf : 10,
+    },
+    building : {
+      table : 1
+    },
+    difficulty : 0,
+    timer : 5,
+    limit : 1,
   },
 }
 
@@ -468,9 +557,17 @@ encyclopedia.stories = {
     }
   },
   knife : {
+    words : "It's your knife!  You remember bringing it with you this morning.  Must have "+
+      "dropped it in the fall.",
+    requires : ["name"],
+    condition : function(){
+      return player.i.canAfford({"mushroomKnife":1})
+    }
+  },
+  knife2 : {
     words : "The knife you brought is starting to look a little dull.  It might be a good "+
             "idea to find something to sharpen it with.",
-    requires : ["name"],
+    requires : ["knife"],
     condition : function(){
     }
   }
@@ -486,7 +583,7 @@ encyclopedia.enter = {
     if (playerStats.light >= 1) {
       return true;
     }
-    log.log("error-needitem-light");
+    log.log("error", {error:"needitem", item:"light"});
     return false;
   },
   needsBoat : function(){
@@ -495,7 +592,7 @@ encyclopedia.enter = {
         return true;
       }
     }
-    log.log("error-needitem-boat");
+    log.log("error", {error:"needitem", item:"boat"});
     return false;
   },
 }
@@ -518,7 +615,7 @@ encyclopedia.hexes = {
     name : "Sun's Landing",
     mushrooms : {
 	  "blueleaf" : 500,
-	  "poolcap" : Infinity
+	  "poolcap" : 1000
     },
     colour : "#AAAAAA",
   },
@@ -528,6 +625,9 @@ encyclopedia.hexes = {
 	  "zestnub" : 500
     },
     colour : "#B5B26A",
+    items : {
+      "mushroomKnife",
+    }
   },
   h1_3 : {
     mushrooms : {

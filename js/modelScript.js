@@ -15,6 +15,9 @@ let world = {
         this.hexes[i][j].canEnter = data.canEnter;
         this.hexes[i][j].fallback = data.fallback;
         this.hexes[i][j].addMushrooms(data.mushrooms);
+        if (data.items){
+          this.hexes[i][j].i.award(data.items);
+        }
         if (data.colour) this.hexes[i][j].colour = data.colour;
         else this.hexes[i][j].colour = "#222222";
       }
@@ -85,12 +88,10 @@ let player = {
       action : null,
       actionSpeed : 0,
       discovered : [],
-      durability : {
-        mushroomKnife : 5000,
-      },
+      durability : {},
       equipment : {
-        tool : "mushroomKnife",
-        hat : "blueleafHat",
+        tool : null,
+        hat : null,
         gloves : null,
         shoes : null,
         food : null,
@@ -100,12 +101,7 @@ let player = {
       consumed : {},
     }
     this.i = new container("inv", {
-      pickedblueleaf : 20,
       journal : 1,
-      wisdomSandwich : 500,
-      moongillPowder : 5,
-      moongillierPowder : 500,
-      repairShroom : 100,
     }),
     
     this.currentHex().discovered = true; //Delete this when we implement crafting; make them craft a map for it.
@@ -194,7 +190,7 @@ let player = {
         inventoryDisplay.redraw();
         if (this.currentHex().i.getInv(thing) <= 0){
           this.data.action = null;
-          log.log("depleted-"+thing);
+          log.log("depleted", {mushroom:thing});
           locationDisplay.redraw(true);
         }
         break;
@@ -211,12 +207,12 @@ let player = {
         this.i.pay(materials);
         inventoryDisplay.redraw(true);
         hex.addBuilding(thing);
-        log.log("built-"+thing);
+        log.log("built", {building:thing});
         this.data.action = null;
         break;
       case "craft":
         buildingData = encyclopedia.buildingData(action.details.building);
-        let recipe = buildingData.recipes[action.details.thing];
+        let recipe = encyclopedia.crafting[action.details.thing];
         if (!player.i.canAfford(recipe.materials)){
           this.data.action = null;
           break;
@@ -231,7 +227,7 @@ let player = {
         break;
       case "research":
         buildingData = encyclopedia.buildingData(action.details.building);
-        let research = buildingData.research[action.details.thing];
+        let research = encyclopedia.research[action.details.thing];
         if (player.data.researched[action.details.thing] >= research.limit){
           this.data.action = null;
           break;
@@ -245,8 +241,7 @@ let player = {
         if (!player.data.researched[action.details.thing])
           player.data.researched[action.details.thing] = 0;
         player.data.researched[action.details.thing] ++;
-        log.log("research-" + action.details.thing, 
-          {player:player, research:research});
+        log.log("research", {research:action.details.thing});
         if (player.data.researched[action.details.thing] >= research.limit){
           this.data.action = null;
           break;
@@ -378,7 +373,7 @@ let player = {
         this.data.durability[this.data.equipment["tool"]]--;
         if (this.data.durability[this.data.equipment["tool"]] <= 0) {
           this.recalculateStats();
-          log.log("break-" + this.data.equipment["tool"]);
+          log.log("break", {item:this.data.equipment["tool"]});
         }
         equipmentDisplay.redraw();
       }
@@ -413,11 +408,11 @@ let player = {
     for (let food of Object.keys(this.data.consumed)) {
       this.data.consumed[food]--;
       if (this.data.consumed[food] <= 0) {
-        log.log("expire-" + food);
+        log.log("expire", {item:food});
         delete this.data.consumed[food];
         buffExpired = true;
       } else if (this.data.consumed[food] == 150) {
-        log.log("expiresoon-" + food);
+        log.log("expire", {item:food, soon:true});
       }
     }
     if (buffExpired) {
@@ -551,8 +546,10 @@ let encyclopedia = {
             ac.map = 'showMap()';
             break;
         }
-        if (itemData.type === "picked-mushroom" || itemData.type === "food"){
-          ac.eat = 'eat("'+item+'")';
+        if (itemData.edible){
+          let verb = itemData.edible.verb || "eat";
+          
+          ac[verb] = 'eat("'+item+'")';
         }
         if (itemData.type === "repair") {
           ac.repair = 'repair("'+item+'")';
@@ -708,15 +705,15 @@ function hex(id, x, y){
     }
   },
   this.handleRegrowth = function() {
-	let displayChanged = false;
-	for (let mushroom in this.data.regrowthTime) {
-	  if (this.i.getInv(mushroom) < this.capacity[mushroom]) {
-        this.data.regrowthTime[mushroom] -= 100;
-	  }
-	  if (this.data.regrowthTime[mushroom] <= 0) {
-      this.data.regrowthTime[mushroom] += 20000;
-      this.i.setInv(mushroom, this.capacity[mushroom]);
-      displayChanged = true;
+    let displayChanged = false;
+    for (let mushroom in this.data.regrowthTime) {
+      if (this.i.getInv(mushroom) < this.capacity[mushroom]) {
+          this.data.regrowthTime[mushroom] -= 100;
+      }
+      if (this.data.regrowthTime[mushroom] <= 0) {
+        this.data.regrowthTime[mushroom] += 20000;
+        this.i.setInv(mushroom, this.capacity[mushroom]);
+        displayChanged = true;
       }
     }
     if (displayChanged) {
@@ -749,8 +746,11 @@ function action(name, details){
     }
     case "craft": {
       const buildingData = encyclopedia.buildingData(details.building);
-      const recipe = buildingData.recipes[details.thing];
+      const recipe = encyclopedia.craftung[details.thing];
       let timer = recipe.timer;
+      if (!timer){
+        timer = buildingData.timer;
+      }
       if (!timer) {
         timer = 10;
       }
@@ -759,8 +759,11 @@ function action(name, details){
     }
     case "research": {
       const buildingData = encyclopedia.buildingData(details.building);
-      const recipe = buildingData.research[details.thing];
+      const recipe = encyclopedia.research[details.thing];
       let timer = recipe.timer;
+      if (!timer){
+        timer = buildingData.timer;
+      }
       if (!timer) {
         timer = 10;
       }

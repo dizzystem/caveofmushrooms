@@ -24,9 +24,26 @@ function pluralize(str){
 }
 function capitalize(str){
   //stolen off stackoverflow
-  return str.replace(/\b\w/g, function(l){ return l.toUpperCase() });
+  return str[0].toUpperCase()+str.substring(1);
 }
-function queryNum (integer, precise){
+uncapitalizedWords = ["as", "if", "at", "but", "by", "for", "from", "in", "into", "like", 
+  "a", "an", "nor", "of", "off", "on", "or", "over", "so", "to", "with"];
+function capitalize_all(str){
+  const bits = str.split(" ");
+  let capBits = [];
+  
+  for (const ind in bits){
+    const bit = bits[ind];
+    if (uncapitalizedWords.indexOf(bit) != -1){
+      capBits.push(bit);
+      continue;
+    }
+    capBits.push(capitalize(bit));
+  }
+  
+  return capBits.join(" ");
+}
+function queryNum(integer, precise){
   if (integer === 0){
     return "no";
   }
@@ -54,6 +71,22 @@ function sizeof(ob){
     size ++;
   }
   return size;
+}
+function time_expression(seconds){
+  let days = Math.floor(seconds / (24 * 60 * 60));
+  let hours = Math.floor((seconds - days * 24 * 60 * 60) / (60 * 60));
+  let minutes = Math.floor((seconds - days * 24 * 60 * 60 - hours * 60 * 60) / 60);
+  seconds = Math.floor(seconds - days * 24 * 60 * 60 - hours * 60 * 60 - minutes * 60);
+  
+  if (days > 0){
+    return days+"d "+hours+"h "+minutes+"m "+seconds+"s";
+  } else if (hours > 0){
+    return hours+"h "+minutes+"m "+seconds+"s";
+  } else if (minutes > 0){
+    return minutes+"m "+seconds+"s";
+  } else if (seconds > 0){
+    return seconds+"s";
+  }
 }
 function text_hover(text, action){
   return "<a onmouseover=\""+action+"\">"+text+"</a>";
@@ -454,8 +487,32 @@ const equipmentDisplay = {
     }
     txt += "<h4>Consumed</h4>";
     for (let food in player.data.consumed) {
-      let foodName = encyclopedia.items[food].sho;
-      txt += "<p>"+ capitalize(foodName)+": ("+player.data.consumed[food]/10+")</p>";
+      let foodData = encyclopedia.items[food];
+      let foodName = foodData.sho;
+      let timer = time_expression(player.data.consumed[food]/10);
+      let buffs = [];
+      
+      for (const stat in foodData.edible.stats){
+        const bits = stat.split("_");
+        const amount = foodData.edible.stats[stat];
+        let buff = "";
+        
+        if (bits[0] === "add"){
+          buff += "+"+amount;
+        } else if (bits[0] === "mult"){
+          buff += "+"+amount*100+"%";
+        }
+        
+        buff += " to "+encyclopedia.stats[bits[2]].sho;
+        
+        if (bits[1] != "constant"){
+          buff += " per "+encyclopedia.stats[bits[1]]+" you have";
+        }
+        
+        buffs.push(buff);
+      }
+      
+      txt += "<p>"+capitalize(foodName)+": "+qms(buffs)+" ("+timer+")</p>";
     }
     this.display.html(txt);
   },
@@ -468,7 +525,8 @@ const equipmentDisplay = {
 const settingsDisplay = {
   start(){
     this.display = $("#settings");
-    this.display.html(text_click("Hard Reset", "hardReset()"));
+    this.display.html("<p>"+text_click("Hard Reset", "hardReset()")+"</p>"+
+      "<p>"+text_click("Get debug items", "debug()")+"</p>");
   },
   redraw(force = false){
   },
@@ -498,17 +556,17 @@ const log = {
     return entry;
   },
   entryTxt(logType, details){
-    let bits = logType.split("-");
     let txt = "";
     let hex = player.currentHex();
-    let thing, buildingData;
-    switch (bits[0]){
+    let itemData, buildingData;
+    switch (logType){
       case "break": {
-        thing = bits[1];
-        let data = encyclopedia.itemData(thing);
-        return "Your "+data.sho+" broke. You won't be able to use it until it is repaired.";
+        let item = details.item;
+        itemData = encyclopedia.itemData(item);
+        return "The edge on "+itemData.sho+" has worn down to the point where you can't use it "
+          "any more.  You'll need to find something to sharpen it with.";
       }
-      case "build":
+      case "build": {
         let name = hex.getName();
         let canbuilds = hex.canBuild(null, true);
         for (let i=0;i<canbuilds.length;i++){
@@ -535,89 +593,141 @@ const log = {
           txt = "<p>You look appraisingly over the area.  There's space here for: </p>"+txt;
         }
         return txt;
-      case "built":
-        thing = bits[1];
-        let buildingName = encyclopedia.buildingData(thing).sho;
-        let enterLink = text_click(buildingName, "enter('"+thing+"')");
+      }
+      case "built": {
+        let building = details.building;
+        let buildingName = encyclopedia.buildingData(building).sho;
+        let enterLink = text_click(buildingName, "enter('"+building+"')");
         let hexName = hex.getName();
         
         return "Built a "+enterLink+" in "+hexName+".";
+      }
       case "depleted": {
-        thing = bits[1]
-        let data = encyclopedia.itemData(thing);
-        return "The area has run out of "+data.sho+". You may wait for them to replenish.";
+        let mushroom = details.mushroom;
+        itemData = encyclopedia.itemData(mushroom);
+        return "The area has run out of "+itemData.sho+". You may wait for them to replenish.";
       }
       case "eat": {
-        thing = bits[1];
-        let data = encyclopedia.itemData(thing);
-        return capitalize(data.sho)+" consumed.";
-      }
-      case "enter":
-        thing = bits[1];
-        buildingData = encyclopedia.buildingData(thing);
-        if (buildingData.recipes){
-          txt += "<p>You can craft:</p>";
-          let recipes = buildingData.recipes;
-          for (let name in recipes){
-            let mats_array = [];
-            let recipe = recipes[name];
-            for (let material in recipe.materials){
-              let numRequired = recipe.materials[material];
-              
-              mats_array.push(shopping_list_item(material, numRequired));
-            }
-            if (player.i.canAfford(recipe.materials)){
-              let craftLink = text_click(name, "craft('"+name+"','"+thing+"')");
-              
-              txt += "<p>"+craftLink+" - "+qms(mats_array)+"<br>"+
-                recipe.desc+"</p>";
-            } else {
-              txt += "<p>"+name+" - "+qms(mats_array)+"<br>"+
-                recipe.desc+"</p>";
-            }
-          }
+        let food = details.food;
+        itemData = encyclopedia.itemData(food);
+        if (itemData.edible.desc){
+          return itemData.edible.desc;
         }
-        if (buildingData.research){
-          txt += "<p>You can research:</p>";
-          let research = buildingData.research;
-          for (let name in research){
-            if (player.data.researched[name] === research[name].limit) {
+        return capitalize(itemData.sho)+" consumed.";
+      }
+      case "enter": {
+        let building = details.building;
+        buildingData = encyclopedia.buildingData(building);
+        
+        if (buildingData.crafting){
+          let craftList = [];
+          let craftTier = buildingData.crafting;
+          
+          for (let name in encyclopedia.crafting){
+            let recipe = encyclopedia.crafting[name];
+            
+            for (let building in recipe.building){
+              if (craftTier[building] < recipe[building]){
+                buildingInsufficient = true;
+                break;
+              }
+            }
+            if (buildingInsufficient){
               continue;
             }
+            
             let mats_array = [];
-            let recipe = research[name];
             for (let material in recipe.materials){
               let numRequired = recipe.materials[material];
               
               mats_array.push(shopping_list_item(material, numRequired));
             }
             if (player.i.canAfford(recipe.materials)){
-              researchLink = text_click(name, "research('"+name+"','"+thing+"')");
+              let craftLink = text_click(name, "craft('"+name+"','"+building+"')");
               
-              txt += "<p>"+researchLink+" ("+qms(mats_array)+")<br>"+research[name].desc+"</p>";
+              craftList.push("<p>"+craftLink+" - "+qms(mats_array)+"<br>"+
+                recipe.desc+"</p>");
             } else {
-              txt += "<p>"+name+" ("+qms(mats_array)+")<br>"+research[name].desc+"</p>";
+              craftList.push("<p>"+name+" - "+qms(mats_array)+"<br>"+
+                recipe.desc+"</p>");
             }
+          }
+          
+          txt = "<p>You can craft:</p>";
+          if (craftList.length){
+            txt += craftList.join("");
+          } else {
+            txt += "<p>Nothing.</p>";
+          }
+        }
+        
+        if (buildingData.research){
+          let researchList = [];
+          let researchTier = buildingData.research;
+          let buildingInsufficient = false;
+          
+          for (let name in encyclopedia.research){
+            if (player.data.researched[name] === encyclopedia.research[name].limit) {
+              continue;
+            }
+            
+            let recipe = encyclopedia.research[name];
+            
+            for (let building in recipe.building){
+              if (researchTier[building] < recipe[building]){
+                buildingInsufficient = true;
+                break;
+              }
+            }
+            if (buildingInsufficient){
+              continue;
+            }
+            
+            let mats_array = [];
+            for (let material in recipe.materials){
+              let numRequired = recipe.materials[material];
+              
+              mats_array.push(shopping_list_item(material, numRequired));
+            }
+            if (player.i.canAfford(recipe.materials)){
+              researchLink = text_click(name, "research('"+name+"','"+building+"')");
+              
+              researchList.push("<p>"+researchLink+" ("+qms(mats_array)+")<br>"+recipe.desc+"</p>");
+            } else {
+              researchList.push("<p>"+name+" ("+qms(mats_array)+")<br>"+recipe.desc+"</p>");
+            }
+          }
+          txt += "<p>You can research:</p>";
+          if (researchList.length){
+            txt += researchList.join("");
+          } else {
+            txt += "<p>Nothing.</p>";
           }
         }
         //todo: make sheds for storage
         return txt;
-      case "error":
-        switch(bits.length > 1 ? bits[1] : null){
+      }
+      case "error": {
+        const error = details.error;
+        switch(error){
+          case "itemdoesnotexist":
+            return "That item doesn't exist.";
           case "needitem":
-            if (bits.length < 2){
-              return "You don't have the necessary equipment to go this way.";
-            }
-            const item = bits[2];
+            let item = details.item;
             switch(item){
               case "boat":
                 return "This part of the cave is flooded with dark, murky water. It's too deep to wade through - you'll need a boat of some sort.";
               case "light":
                 return "The further reaches of this cave are filled with almost total darkness. You'll need a way to light it up.";
               default:
-                const itemData = encyclopedia.itemData(item);
+                itemData = encyclopedia.itemData(item);
                 return "You need a "+itemData.sho+" to go this way.";
             }
+          case "nomaterialstoeat": {
+            let item = details.item;
+            itemData = encyclopedia.itemData(item);
+            return "You don't have any "+itemData.sho+" to "+itemData.edible.verb+".";
+          }
           case "nomaterialstocraft":
             return "You do not have the materials to craft this item.";
           case "nomaterialstoresearch":
@@ -629,49 +739,50 @@ const log = {
           case "read":
             return "You can't read that.";
           case "repairnoequip":
-            return "You are not equipping anything. Equip the item you want to repair.";
+            return "You are not equipping anything.  Equip the item you want to repair.";
           case "repairfullbar":
-            return "Your equipped tool does not require repairing. Equip the item you want to repair.";
+            return "Your equipped tool does not require repairing.  Equip the item you want to repair.";
           case "researchcapped":
             return "This item is already at its maximum research level.";
           default:
             return "That action is currently invalid.";
         }
+      }
       case "examine": {
-        thing = bits[1];
-        let data = encyclopedia.itemData(thing);
-        txt = "<p>"+data.lon+"</p>";
-        if (details === "discovered"){
-          txt += "<p>You decide to name the "+data.bsho+" \""+data.sho+"\".</p>";
+        let thing = details.thing;
+        itemData = encyclopedia.itemData(thing);
+        txt = "<p>"+itemData.lon+"</p>";
+        if (details.discovered){
+          txt += "<p>You decide to name the "+itemData.bsho+" \""+itemData.sho+"\".</p>";
         }
         return txt;
       }
       case "expire": {
-        thing = bits[1];
-        let data = encyclopedia.itemData(thing);
-        return "The effects of "+data.sho+" has expired.";
+        let item = details.item;
+        itemData = encyclopedia.itemData(item);
+        if (details.soon){
+          return "The effects of "+itemData.sho+" will expire in 15 seconds.";
+        } else {
+          return "The effects of "+itemData.sho+" has expired.";
+        }
       }
-      case "expiresoon": {
-        thing = bits[1];
-        let data = encyclopedia.itemData(thing);
-        return "The effects of "+data.sho+" will expire in 15 seconds.";
-      }
-      case "fallback": 
-        switch (details.reason) {
+      case "fallback": {
+        switch (details.reason){
           case "torch":
-            return "You ran out of light, so you are forced to retreat to "+hex.getName()+".";
+            return "Your light goes out.  Fumbling in the dark, you blunder around blindly until "+
+              "you catch sight of light in the distance, then stumble in its direction until you "+
+              "can see again.<br>"+
+              "You've moved to "+hex.getName()+".";
           case "boat":
-            return "Your boat broke, so you have been washed away to "+hex.getName()+".";
+            return "With a quiet creak of protest, your raft comes apart into pieces.  You flail "+
+              "in the rushing water, barely staying afloat until you manage to, by sheer luck, "
+              "wash ashore.<br>"+
+              "You've moved to "+hex.getName()+".";
           default:
-            return "You can no longer stay in this area. Falling back to "+hex.getName()+".";
+            return "You've moved to "+hex.getName()+".";
         }
-      case "story":
-        let storyData = encyclopedia.stories[details.chapter];
-        if (!storyData){
-          return "Story data missing.";
-        }
-        return storyData.words;
-      case "journal":
+      }
+      case "journal": {
         txt = "<p>You flip through your journal. ";
         if (player.data.discovered.length){
           txt += "You've discovered these mushrooms: "+qms(player.data.discovered.map(function(mushroom){
@@ -693,6 +804,7 @@ const log = {
         } else
           txt += "You haven't completed any research yet.</p>";
         return txt;
+      }
       case "look": {
         txt = "<p>"; //geographical features, eventually? also list of mushrooms
         let buildings = hex.getBuilding();
@@ -714,82 +826,86 @@ const log = {
         return txt;
       }
       case "repair": {
-        let data = encyclopedia.itemData(details.consumed);
+        itemData = encyclopedia.itemData(details.consumed);
         let equipData = encyclopedia.itemData(details.equip);
-        return "You've used a "+data.sho+" to repair your "+equipData.sho+".";
+        
+        return "You sit down and grind away at your "+equipData.sho+" for a while with a "+
+          itemData.sho+".  When you're done, the "+equipData.sho+" is sharp enough to use "+
+          "once again.";
       }
       case "research": {
-        if (details.research.completion) {
-          return details.research.completion;
+        let research = details.research;
+        let researchData = encyclopedia.research[research];
+        if (research.completion) {
+          if (typeof research.completion === "function"){
+            return research.completion();
+          } else if (typeof research.completion === "string"){
+            let completeLog = research.completion;
+            
+            completeLog.replaceAll("$level$", player.data.researched[research]);
+            
+            return completeLog;
+          } else {
+            return completeLog;
+          }
         } else {
-          return capitalize(bits[1])+" research level is increased to "+details.player.data.researched[bits[1]]+".";
+          return capitalize(research)+" research level is increased to "+player.data.researched[research]+".";
         }
       }
-      case "travel":
+      case "story": {
+        let storyData = encyclopedia.stories[details.chapter];
+        if (!storyData){
+          return "Story data missing.";
+        }
+        return storyData.words;
+      }
+      case "travel": {
         return "You've arrived at your newest destination: "+hex.getName()+".";
+      }
     }
   },
   entryTitle(logType, details){
-    let bits = logType.split("-");
     let hex = player.currentHex();
-    let buildingData;
-    switch (bits[0]){
-      case "break": {
-        thing = bits[1];
-        let data = encyclopedia.itemData(thing);
-        return "Equipment Broken: "+capitalize(data.sho);
-      }
-      case "build":
+    let itemData, buildingData;
+    switch (logType){
+      case "build": {
         hex = player.currentHex();
         return hex.getName();
-      case "built":
-        buildingData = encyclopedia.buildingData(bits[1]);
-        return capitalize(buildingData.sho);
-      case "depleted": {
-        let data = encyclopedia.itemData(bits[1]);
-        return "Depleted: "+capitalize(data.sho);
       }
-      case "eat": {
-        return "Item Consumed";
+      case "built": {
+        let building = details.building;
+        buildingData = encyclopedia.buildingData(building);
+        return capitalize_all(buildingData.sho);
       }
-      case "enter":
-        buildingData = encyclopedia.buildingData(bits[1]);
-        return capitalize(buildingData.sho);
-      case "error":
-        return null;
+      case "enter": {
+        let building = details.building;
+        buildingData = encyclopedia.buildingData(building);
+        return capitalize_all(buildingData.sho);
+      }
       case "examine": {
-        let data = encyclopedia.itemData(bits[1]);
-        if (details === "discovered")
-          return "Discovered: "+capitalize(data.sho);
+        let thing = details.thing;
+        itemData = encyclopedia.itemData(thing);
+        if (details.discovered)
+          return "Discovered: "+capitalize_all(itemData.sho);
         else
-          return capitalize(data.sho);
-      }
-      case "expire": {
-        thing = bits[1];
-        let data = encyclopedia.itemData(thing);
-        return "Expired: "+capitalize(data.sho); 
-      }
-      case "expiresoon": {
-        thing = bits[1];
-        let data = encyclopedia.itemData(thing);
-        return "Expiring Soon: "+capitalize(data.sho);
+          return capitalize_all(itemData.sho);
       }
       case "fallback":
         return "Falling Back";
       case "journal":
         return "Journal";
-      case "look":
+      case "look": {
         hex = player.currentHex();
         return hex.getName();
+      }
       case "travel":
         return "New Location";
       case "repair": {
         let equipData = encyclopedia.itemData(details.equip);
-        return "Equipment Repaired: "+capitalize(equipData.sho);
+        return "Repaired "+capitalize_all(equipData.sho);
       }
-      case "research": {
-        return "Research Complete: "+capitalize(bits[1]);
-      }
+      case "research":
+        return "Research Completed";
       default:
         return null;
     }
@@ -936,7 +1052,7 @@ function build(thing){
     if (hex.canBuild(thing)){
       return player.doAction(new action("build", { thing : thing }));
     } else {
-      return log.log("error-oldbuild");
+      return log.log("error", {error:"oldbuild"});
     }
   }
   log.log("build");
@@ -944,21 +1060,21 @@ function build(thing){
 
 function craft(thing, building){
   let buildingData = encyclopedia.buildingData(building);
-  let recipe = buildingData.recipes[thing];
+  let recipe = encyclopedia.crafting[thing];
   if (!player.i.canAfford(recipe.materials)){
-    return log.log("error-nomaterialstocraft");
+    return log.log("error", {error:"nomaterialstocraft"});
   }
   return player.doAction(new action("craft", { thing : thing, building : building }));
 }
 
 function research(thing, building){
   let buildingData = encyclopedia.buildingData(building);
-  let research = buildingData.research[thing];
+  let research = encyclopedia.research[thing];
   if (player.data.researched[thing] >= research.limit){
-	return log.log("error-researchcapped");
+    return log.log("error", {error:"researchcapped"});
   }
   if (!player.i.canAfford(research.materials)){
-    return log.log("error-nomaterialstoresearch");
+    return log.log("error", {error:"nomaterialstoresearch"});
   }
   return player.doAction(new action("research", { thing : thing, building : building }));
 }
@@ -972,32 +1088,41 @@ function drop(thing){
 }
 
 function eat(thing) {
-  const itemData = encyclopedia.itemData(thing)
-  if (!itemData || itemData.duration === undefined) {
-    return;
+  const itemData = encyclopedia.itemData(thing);
+  const payment = {}
+  payment[thing] = 1;
+  
+  if (!itemData || !itemData.edible){
+    return log.log("error", {error:"itemdoesnotexist"});
   }
-  const type = itemData.type;
-  if (itemData.duration) {
-    player.data.consumed[thing] = itemData.duration * fps;
+  if (!player.i.canAfford(payment)){
+    return log.log("error", {error:"nomaterialstoeat", item:thing});
+  }
+  
+  player.i.pay(payment);
+  if (itemData.edible.stats && itemData.edible.duration){
+    player.data.consumed[thing] = itemData.edible.duration * fps;
     player.recalculateStats();
   }
-  player.i.adjInv(thing, -1);
-  log.log("eat-"+thing);
+  if (itemData.edible.giveItem){
+    player.i.award(itemData.edible.giveItem);
+  }
+  log.log("eat", {food:thing});
   inventoryDisplay.redraw(true);
 }
 
 //For entering building menus.
 function enter(thing){
   if (!player.currentHex().getBuilding(thing)){
-    log.log("error-oldenter");
+    log.log("error", {error:"oldenter"});
   }
   //todo: make sheds for storage
-  log.log("enter-"+thing);
+  log.log("enter", {building:thing});
 }
 
-function equip(thing) {
+function equip(thing){
   const type = encyclopedia.itemData(thing).type;
-  if (!type) {
+  if (!type){
     return;
   }
   const keywords = type.split("-");
@@ -1018,10 +1143,10 @@ function equip(thing) {
 
 function examine(where, thing){
   if (where === "loc" && player.discover(thing)){
-    log.log("examine-"+thing, "discovered");
+    log.log("examine", {thing:thing, discovered:true});
     locationDisplay.redraw(true);
   } else {
-    log.log("examine-"+thing);
+    log.log("examine", {thing:thing});
   }
 }
 
@@ -1050,7 +1175,7 @@ function read(thing){
   if (thing === "journal")
     log.log("journal");
   else
-    log.log("error-read");
+    log.log("error", {error:"read"});
 }
 
 function remove(thing) {
@@ -1065,12 +1190,12 @@ function repair(consumed, force=true) {
   const equip = player.getEquip("tool");
   // Prevent repairs if tool isn't equipped, or if it's at full durability.
   if (equip === null) {
-    log.log("error-repairnoequip");
+    log.log("error", {error:"repairnoequip"});
     return;
   }
   const equipData = encyclopedia.itemData(equip);
   if (player.data.durability[equip] === encyclopedia.itemData(equip).durability) {
-    log.log("error-repairfullbar");
+    log.log("error", {error:"repairfullbar"});
     return;
   }
   // Adds durability to the tool by fetching the repair attribute of the 
@@ -1113,4 +1238,15 @@ function hardReset(){
   }
 }
 
-let debug = {};
+function debug(){
+  player.i.award({
+    pickedblueleaf : 20,
+    wisdomSandwich : 500,
+    moongillPowder : 5,
+    moongillierPowder : 500,
+    repairShroom : 100,
+    mushroomKnife : 1,
+    blueleafHat : 1
+  });
+  inventoryDisplay.redraw(force);
+}
