@@ -375,7 +375,7 @@ encyclopedia.buildings = {
   makeshiftTable : {
     sho : "makeshift table",
     materials : {
-      pickedpoolcap : 10,
+      emptypoolcap : 10,
     },
     research : {
       table : 1
@@ -401,7 +401,7 @@ encyclopedia.crafting = {
     desc : "Make some ink by distilling this tea.",
     materials : {
       blueleafTea : 5,
-      pickedpoolcap : 1,
+      emptypoolcap : 1,
     },
     products : { blueleafInk : 1, },
     building : {
@@ -446,7 +446,7 @@ encyclopedia.crafting = {
   },
   "raft" : {
     materials : {
-      pickedpoolcap : 10,
+      emptypoolcap : 10,
       rope : 5, //glue?
     },
     products : { "raft" : 1 },
@@ -490,10 +490,6 @@ encyclopedia.crafting = {
     materials : { pickedzestnub : 1, },
     products : { zestnubNub : 3, },
   },
-  "poolcap extraction" : { 
-    materials : { pickedpoolcap : 1, },
-    products : { poolcapCap : 1, },
-  },
   */
 }
 
@@ -501,7 +497,7 @@ encyclopedia.research = {
   "map" : {
     desc : "Draw a map of this cave, so I can keep track of where I've explored.",
     materials : {
-      blueleafInk : 10,
+      blueleafInk : 1,
     },
     building : {
       table : 1
@@ -557,8 +553,8 @@ encyclopedia.stories = {
     }
   },
   knife : {
-    words : "It's your knife!  You remember bringing it with you this morning.  Must have "+
-      "dropped it in the fall.",
+    words : "It's your knife!  You remember bringing it with you the morning before you fell "+
+      "down here.  Must have dropped it in the fall.",
     requires : ["name"],
     condition : function(){
       return player.i.canAfford({"mushroomKnife":1})
@@ -626,7 +622,7 @@ encyclopedia.hexes = {
     },
     colour : "#B5B26A",
     items : {
-      "mushroomKnife",
+      "mushroomKnife" : 1
     }
   },
   h1_3 : {

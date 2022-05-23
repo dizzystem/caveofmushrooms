@@ -746,7 +746,7 @@ function action(name, details){
     }
     case "craft": {
       const buildingData = encyclopedia.buildingData(details.building);
-      const recipe = encyclopedia.craftung[details.thing];
+      const recipe = encyclopedia.crafting[details.thing];
       let timer = recipe.timer;
       if (!timer){
         timer = buildingData.timer;

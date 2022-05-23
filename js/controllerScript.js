@@ -622,6 +622,7 @@ const log = {
         if (buildingData.crafting){
           let craftList = [];
           let craftTier = buildingData.crafting;
+          let buildingInsufficient = false;
           
           for (let name in encyclopedia.crafting){
             let recipe = encyclopedia.crafting[name];
@@ -880,7 +881,7 @@ const log = {
       case "enter": {
         let building = details.building;
         buildingData = encyclopedia.buildingData(building);
-        return capitalize_all(buildingData.sho);
+        return text_click(capitalize_all(buildingData.sho), "enter('"+building+"')");
       }
       case "examine": {
         let thing = details.thing;
