@@ -19,6 +19,36 @@ let world = {
         else this.hexes[i][j].colour = "#222222";
       }
     }
+    
+    this.data = {
+      worldTime : 0
+    }
+  },
+  gameLoad : function(worldData){
+    for (let i=0;i<20;i++){
+      for (let j=0;j<20;j++){
+        if (worldData.hexData[i][j] && this.hexes[i][j]){
+          this.hexes[i][j].gameLoad(worldData.hexData[i][j]);
+        }
+      }
+    }
+  },
+  gameSave : function(){
+    let worldData = this.data;
+    
+    worldData.hexData = {};
+    for (let i=0;i<20;i++){
+      worldData.hexData[i] = [];
+      for (let j=0;j<20;j++){
+        if (this.hexes[i][j]){
+          worldData.hexData[i][j] = this.hexes[i][j].gameSave();
+        } else {
+          worldData.hexData[i][j] = null;
+        }
+      }
+    }
+    
+    return worldData;
   },
   tick : function(){
     for (let i=0;i<this.hexes.length;i++){
@@ -28,6 +58,8 @@ let world = {
         }
       }
     }
+    
+    this.data.worldTime ++;
   },
   getHex : function(hx, hy){
     if (!this.hexes[hy]) return null;
@@ -47,12 +79,26 @@ let world = {
 
 let player = {
   start : function(){
-    this.x = 1;
-    this.y = 2;
-    this.action = null;
-    this.actionSpeed = 0;
-    this.discovered = [];
-    this.currentHex().discovered = true; //Delete this when we implement crafting; make them craft a map for it.
+    this.data = {
+      x : 1,
+      y : 2,
+      action : null,
+      actionSpeed : 0,
+      discovered : [],
+      durability : {
+        mushroomKnife : 5000,
+      },
+      equipment : {
+        tool : "mushroomKnife",
+        hat : "blueleafHat",
+        gloves : null,
+        shoes : null,
+        food : null,
+        drink : null,
+      },
+      researched : {},
+      consumed : {},
+    }
     this.i = new container("inv", {
       pickedblueleaf : 20,
       journal : 1,
@@ -60,46 +106,47 @@ let player = {
       moongillPowder : 5,
       moongillierPowder : 500,
       repairShroom : 100,
-    });
-    this.durability = {
-      mushroomKnife : 5000,
-    };
-    this.equipment = {
-      tool : "mushroomKnife",
-      hat : "blueleafHat",
-      gloves : null,
-      shoes : null,
-      food : null,
-      drink : null,
-    };
-    this.researched = {};
-    this.consumed = {};
+    }),
+    
+    this.currentHex().discovered = true; //Delete this when we implement crafting; make them craft a map for it.
   },
-  getX : function(){ return this.x; },
-  getY : function(){ return this.y; },
+  gameLoad : function(playerData){
+    this.data = playerData;
+    
+    this.i = new container("inv", this.data.i);
+  },
+  gameSave : function(){
+    let playerData = this.data;
+    
+    playerData.i = this.i.inventory;
+    
+    return playerData;
+  },
+  getX : function(){ return this.data.x; },
+  getY : function(){ return this.data.y; },
   adjX : function(adjust){
-    this.x += adjust;
+    this.data.x += adjust;
   },
   adjY : function(adjust){
-    this.y += adjust;
+    this.data.y += adjust;
   },
   currentHex : function(){
-    return world.getHex(this.x, this.y);
+    return world.getHex(this.data.x, this.data.y);
   },
   hasDiscovered : function(item){
-    return this.discovered.includes(item);
+    return this.data.discovered.includes(item);
   },
   discover : function(item){
     if (encyclopedia.itemData(item) && 
         encyclopedia.itemData(item).type === "living-mushroom" && 
-        !this.discovered.includes(item)){
-      this.discovered.push(item);
+        !this.data.discovered.includes(item)){
+      this.data.discovered.push(item);
       return true;
     }
     return false;
   },
   getActionSpeed : function(){
-    switch(this.action.name){
+    switch(this.data.action.name){
       //Different actions should have different timers, based on equipment and buffs and terrain.
       case "research":
         return playerStats.researchSpeed;
@@ -112,18 +159,18 @@ let player = {
     }
     return 1;
   },
-  currentAction : function(){ return this.action; },
+  currentAction : function(){ return this.data.action; },
   doAction : function(action){
-    if (this.action) {
-      if (action.name === this.action.name && 
-        objectsEqual(action.details, this.action.details)) {
+    if (this.data.action) {
+      if (action.name === this.data.action.name && 
+        objectsEqual(action.details, this.data.action.details)) {
         {
           return;
         }
       }
     }
-    this.action = action;
-    this.actionSpeed = this.getActionSpeed();
+    this.data.action = action;
+    this.data.actionSpeed = this.getActionSpeed();
     actionDisplay.redraw();
   },
   completeAction : function(action){
@@ -138,7 +185,7 @@ let player = {
         log.log("travel");
         locationDisplay.hovering = null;
         locationDisplay.redraw(true);
-        this.action = null;
+        this.data.action = null;
         break;
       case "gather":
         thing = action.details.thing;
@@ -146,7 +193,7 @@ let player = {
         this.currentHex().i.adjInv(thing, -1);
         inventoryDisplay.redraw();
         if (this.currentHex().i.getInv(thing) <= 0){
-          this.action = null;
+          this.data.action = null;
           log.log("depleted-"+thing);
           locationDisplay.redraw(true);
         }
@@ -158,54 +205,54 @@ let player = {
         let hex = this.currentHex();
         
         if (!player.i.canAfford(materials)){
-          this.action = null;
+          this.data.action = null;
           break;
         }
         this.i.pay(materials);
         inventoryDisplay.redraw(true);
         hex.addBuilding(thing);
         log.log("built-"+thing);
-        this.action = null;
+        this.data.action = null;
         break;
       case "craft":
         buildingData = encyclopedia.buildingData(action.details.building);
         let recipe = buildingData.recipes[action.details.thing];
         if (!player.i.canAfford(recipe.materials)){
-          this.action = null;
+          this.data.action = null;
           break;
         }
         player.i.pay(recipe.materials);
         player.i.award(recipe.products);
         inventoryDisplay.redraw();
         if (!player.i.canAfford(recipe.materials)){
-          this.action = null;
+          this.data.action = null;
           break;
         }
         break;
       case "research":
         buildingData = encyclopedia.buildingData(action.details.building);
         let research = buildingData.research[action.details.thing];
-        if (player.researched[action.details.thing] >= research.limit){
-          this.action = null;
+        if (player.data.researched[action.details.thing] >= research.limit){
+          this.data.action = null;
           break;
         }
         if (!player.i.canAfford(research.materials)){
-          this.action = null;
+          this.data.action = null;
           break;
         }
         player.i.pay(research.materials);
         inventoryDisplay.redraw();
-        if (!player.researched[action.details.thing])
-          player.researched[action.details.thing] = 0;
-        player.researched[action.details.thing] ++;
+        if (!player.data.researched[action.details.thing])
+          player.data.researched[action.details.thing] = 0;
+        player.data.researched[action.details.thing] ++;
         log.log("research-" + action.details.thing, 
           {player:player, research:research});
-        if (player.researched[action.details.thing] >= research.limit){
-          this.action = null;
+        if (player.data.researched[action.details.thing] >= research.limit){
+          this.data.action = null;
           break;
         }
         if (!player.i.canAfford(research.materials)){
-          this.action = null;
+          this.data.action = null;
           break;
         }
     }
@@ -214,27 +261,33 @@ let player = {
     }
   },
   getEquip : function(slot){
-    if (!slot) return this.equipment;
-    if (this.equipment.hasOwnProperty(slot)) return this.equipment[slot];
+    if (!slot){
+      return this.data.equipment;
+    }
+    if (this.data.equipment.hasOwnProperty(slot)){
+      return this.data.equipment[slot];
+    }
     return null;
   },
   setEquip : function(slot, equip){
-    if (this.equipment.hasOwnProperty(slot)) this.equipment[slot] = equip;
+    if (this.data.equipment.hasOwnProperty(slot)){
+      this.data.equipment[slot] = equip;
+    }
     this.recalculateStats();
   },
   getActiveItems : function() {
     const itemNames = [];
     // Add in equipment for processing
-    for (let slot in this.equipment) {
+    for (let slot in this.data.equipment) {
       let equip = this.getEquip(slot);
-      let isBroken = this.durability.hasOwnProperty(equip) && (this.durability[equip] <= 0);
+      let isBroken = this.data.durability.hasOwnProperty(equip) && (this.data.durability[equip] <= 0);
       if (!equip || isBroken) {
         continue;
       }
       itemNames.push(this.getEquip(slot));
     }
     // Add in consumables
-    for (let food in this.consumed) {
+    for (let food in this.data.consumed) {
       itemNames.push(food);
     }
     return itemNames;
@@ -307,8 +360,8 @@ let player = {
       playerStats[stat] *= multiplier;
     }
     delete playerStats.constant;
-    if (this.action) {
-      this.actionSpeed = this.getActionSpeed();
+    if (this.data.action) {
+      this.data.actionSpeed = this.getActionSpeed();
     }
     if (this.currentHex().canEnter !== undefined) {
       if (!this.currentHex().canEnter()) {
@@ -317,15 +370,15 @@ let player = {
     }
   },
   handleDurability : function() {
-    if (!this.equipment["tool"] || this.durability[this.equipment["tool"]] <= 0) {
+    if (!this.data.equipment["tool"] || this.data.durability[this.data.equipment["tool"]] <= 0) {
       return;
     }
-    if (this.action) {
-      if (this.action.name == "gather") {
-        this.durability[this.equipment["tool"]]--;
-        if (this.durability[this.equipment["tool"]] <= 0) {
+    if (this.data.action) {
+      if (this.data.action.name == "gather") {
+        this.data.durability[this.data.equipment["tool"]]--;
+        if (this.data.durability[this.data.equipment["tool"]] <= 0) {
           this.recalculateStats();
-          log.log("break-" + this.equipment["tool"]);
+          log.log("break-" + this.data.equipment["tool"]);
         }
         equipmentDisplay.redraw();
       }
@@ -333,46 +386,108 @@ let player = {
   },
   moveToFallback : function() {
     let details = this.currentHex().fallback;
-    this.x = details.hex[0];
-    this.y = details.hex[1];
+    this.data.x = details.hex[0];
+    this.data.y = details.hex[1];
     world.discover(this.getX(), this.getY());
     map.redraw(true);
     log.clear();
     log.log("fallback", details);
     locationDisplay.hovering = null;
     locationDisplay.redraw(true);
-    this.action = null;
+    this.data.action = null;
     actionDisplay.redraw(true);
   },
   tick : function(){
     // Increases the progress of actions
-    if (this.action){
-      if (this.action.progress < this.action.required){
-        this.action.progress += this.actionSpeed;
+    if (this.data.action){
+      if (this.data.action.progress < this.data.action.required){
+        this.data.action.progress += this.data.actionSpeed;
       } else {
-        this.completeAction(this.action);
+        this.completeAction(this.data.action);
       }
       this.handleDurability();
       actionDisplay.redraw(true);
     }
     // Decreases the time remaining for buffs
     let buffExpired = false;
-    for (let food of Object.keys(this.consumed)) {
-      this.consumed[food]--;
-      if (this.consumed[food] <= 0) {
+    for (let food of Object.keys(this.data.consumed)) {
+      this.data.consumed[food]--;
+      if (this.data.consumed[food] <= 0) {
         log.log("expire-" + food);
-        delete this.consumed[food];
+        delete this.data.consumed[food];
         buffExpired = true;
-      } else if (this.consumed[food] == 150) {
+      } else if (this.data.consumed[food] == 150) {
         log.log("expiresoon-" + food);
       }
     }
     if (buffExpired) {
       this.recalculateStats();
       equipmentDisplay.redraw(true);
-    } else if (Object.keys(this.consumed).length > 0) {
+    } else if (Object.keys(this.data.consumed).length > 0) {
       equipmentDisplay.redraw();
     }
+  },
+}
+
+let story = {
+  start : function(){
+    this.storiesDone = [];
+    this.lastCheck = 0;
+  },
+  gameLoad : function(storyData){
+    this.storiesDone = storyData;
+  },
+  gameSave : function(){
+    return this.storiesDone;
+  },
+  tick : function(){
+    let now = world.data.worldTime;
+    
+    //Only check for stories every 20 ticks (2 seconds).
+    if (now - this.lastCheck < 20)
+      return;
+    
+    this.lastCheck = now;
+    
+    let stories = encyclopedia.stories;
+    for (const storyName in stories){
+      if (this.storiesDone.indexOf(storyName) != -1){
+        continue;
+      }
+      
+      let story = stories[storyName];
+      
+      if (story.requires){
+        for (const req in story.requires){
+          if (this.storiesDone.indexOf(req) == -1){
+            continue;
+          }
+        }
+      }
+      
+      if (story.condition){
+        if (!story.condition()){
+          continue;
+        }
+      }
+      
+      this.storiesDone.push(storyName);
+      this.tellStory(storyName);
+    }
+  },
+  tellStory : function(story){
+    log.log("story", {chapter : story});
+  }
+}
+
+let settings = {
+  start : function(){
+  },
+  gameLoad : function(settingsData){
+    
+  },
+  gameSave : function(){
+    return null;
   },
 }
 
@@ -432,7 +547,7 @@ let encyclopedia = {
             delete ac.drop;
             delete ac.equip;
             ac.read = 'read("journal")';
-          if (player.researched["map"])
+          if (player.data.researched["map"])
             ac.map = 'showMap()';
             break;
         }
@@ -499,14 +614,29 @@ function hex(id, x, y){
   this.x = x;
   this.y = y;
   this.name = undefined;
-  this.buildings = {};
+  this.data = {
+    buildings : {},
+    regrowthTime : {}
+  }
   //In the future, colours should probably signify something.
   this.colour = "#"+(100+Math.floor(100*Math.random())).toString(16)+
                     (100+Math.floor(100*Math.random())).toString(16)+
                     (100+Math.floor(100*Math.random())).toString(16);
   this.i = new container(id, {});
   this.capacity = undefined;
-  this.regrowthTime = {};
+  
+  this.gameLoad = function(hexData){
+    this.data = hexData;
+    
+    this.i = new container(this.id, this.data.i);
+  }
+  this.gameSave = function(){
+    let hexData = this.data;
+    
+    hexData.i = this.i.inventory;
+    
+    return hexData;
+  }
   
   this.getName = function(){
     if (this.name) return this.name;
@@ -517,12 +647,16 @@ function hex(id, x, y){
     this.name = encyc.name;
   }
   this.addBuilding = function(building){
-    if (!this.buildings[building]) this.buildings[building] = 0;
-    this.buildings[building] ++;
+    if (!this.data.buildings[building]){
+      this.data.buildings[building] = 0;
+    }
+    this.data.buildings[building] ++;
   }
   this.getBuilding = function(building){
-    if (building) return this.buildings[building];
-    return this.buildings;
+    if (building){
+      return this.data.buildings[building];
+    }
+    return this.data.buildings;
   }
   this.canBuild = function(build, nearly){
     if (!build){
@@ -535,7 +669,7 @@ function hex(id, x, y){
       return canbuilds;
     }
     let buildData = encyclopedia.buildingData(build);
-    if (this.buildings[build]){
+    if (this.data.buildings[build]){
       //Already exists.
       return false;
     }
@@ -560,27 +694,27 @@ function hex(id, x, y){
     else return false;
   }
   this.addMushrooms = function(mushrooms){
-	this.capacity = mushrooms;
-    for (let mushroom in mushrooms){
-      this.i.adjInv(mushroom, mushrooms[mushroom]);
-    }
-	this.initialiseRegrowth();
+    this.capacity = mushrooms;
+      for (let mushroom in mushrooms){
+        this.i.adjInv(mushroom, mushrooms[mushroom]);
+      }
+    this.initialiseRegrowth();
   }
   // We will eventually refactor this to take in account climate 
   // and different base regrowth times. 
   this.initialiseRegrowth = function() {
     for (let mushroom in this.capacity) {
-      this.regrowthTime[mushroom] = 20000;
+      this.data.regrowthTime[mushroom] = 20000;
     }
   },
   this.handleRegrowth = function() {
 	let displayChanged = false;
-	for (let mushroom in this.regrowthTime) {
+	for (let mushroom in this.data.regrowthTime) {
 	  if (this.i.getInv(mushroom) < this.capacity[mushroom]) {
-        this.regrowthTime[mushroom] -= 100;
+        this.data.regrowthTime[mushroom] -= 100;
 	  }
-	  if (this.regrowthTime[mushroom] <= 0) {
-      this.regrowthTime[mushroom] += 20000;
+	  if (this.data.regrowthTime[mushroom] <= 0) {
+      this.data.regrowthTime[mushroom] += 20000;
       this.i.setInv(mushroom, this.capacity[mushroom]);
       displayChanged = true;
       }
@@ -641,27 +775,70 @@ function action(name, details){
   }
 }
 
-let previousTimestamp = (new Date()).getTime();
+function gameLoad(){
+  let saveDataString = localStorage.getItem("caveofmushrooms");
+  
+  if (saveDataString){
+    let saveData = JSON.parse(saveDataString);
+    
+    world.gameLoad(saveData.world);
+    player.gameLoad(saveData.player);
+    settings.gameLoad(saveData.settings);
+    story.gameLoad(saveData.story);
+  }
+}
+
+function gameSave(){
+  let saveData = {};
+  
+  saveData.world = world.gameSave();
+  saveData.player = player.gameSave();
+  saveData.settings = settings.gameSave();
+  saveData.story = story.gameSave();
+  
+  let saveDataString = JSON.stringify(saveData);
+  localStorage.setItem("caveofmushrooms", saveDataString);
+}
+
+let lastTick = (new Date()).getTime();
+let lastSave = (new Date()).getTime();
 
 function setup(){
   fps = 10;
   world.start();
   player.start();
+  settings.start();
+  story.start();
+  
+  gameLoad();
+  
   player.recalculateStats();
   drawingSetup();
-  setInterval(tick, 100);
+  setInterval(timePassed, 100);
 }
 
-function tick(){
-  let newTimestamp = (new Date()).getTime();
-  let timeDifference = newTimestamp - previousTimestamp;
+function timePassed(){
+  let now = (new Date()).getTime();
+  let timeDifference = now - lastTick;
   if (timeDifference > 1000) {
     timeDifference = 1000;
   }
   // Carry over any unused seconds.
-  previousTimestamp = newTimestamp - (timeDifference % 100);
+  lastTick = now - (timeDifference % 100);
   for (let i = 0; i < Math.floor(timeDifference / 100); i++) {
-    world.tick();
-    player.tick();
+    tick();
   }
+  
+  timeDifference = now - lastSave;
+  if (timeDifference > 10 * 1000){
+    //Autosave every 10 seconds.
+    gameSave();
+    lastSave = now;
+  }
+}
+
+function tick(){
+  world.tick();
+  player.tick();
+  story.tick();
 }

@@ -106,14 +106,14 @@ encyclopedia.items = {
   pickedblueleaf : {
     type : "picked-mushroom",
     tier : 2,
-    sho : "picked blueleaf",
-    lon : "A frilly blue mushroom that's been cut neatly at the base.",
+    sho : "bundle of blue leaves",
+    lon : "Not quite leaves, these feathery frills have a dark blue colour and a refreshing herbal smell.",
   },
   pickedpoolcap : {
     type : "picked-mushroom",
     tier : 2,
-    sho : "picked poolcap",
-    lon : "A bowl-shaped pink mushroom that's been cut neatly at the base.  It's full of water.",
+    sho : "bowl of pure water",
+    lon : "A bowl made of light pink glossy mushroom.  There's still a bit of stem attached to the bottom.",
   },
   pickedsilkveil : {
     type : "picked-mushroom",
@@ -434,6 +434,46 @@ encyclopedia.buildings = {
       },
     },
   },
+}
+
+encyclopedia.stories = {
+  intro : {
+    words : "You wake up in a deep cave, a dim shaft of light shining down from the cave "+
+            "roof not far away.  The last thing you remember is wandering through a nature "+
+            "reserve near your home looking for mushrooms, slipping on mud, and falling for "+
+            "a heartstoppingly long time.  You're a little dizzy and you've twisted your ankle, "+
+            "but you're miraculously unharmed otherwise."
+  },
+  name : {
+    words : "There are strange mushrooms down here you've never seen before.  For a moment, "+
+            "you're excited at the opportunity to name the new varieties - then you remember "+
+            "that you may not ever get out of this place.",
+    condition : function(){
+      return player.data.discovered.length > 0;
+    }
+  },
+  tea : {
+    words : "The smell of the blueleaf mushrooms makes you feel hungry.  You think you "+
+            "should make some food before you continue looking for an exit.<br><br>"+
+            "Blueprint unlocked: cooking fire",
+    requires : ["name"],
+    condition : function(){
+    }
+  },
+  map : {
+    words : "You might be able to venture out into the gloom, now that you have a way to "+
+            "find your way back.",
+    requires : ["name"],
+    condition : function(){
+    }
+  },
+  knife : {
+    words : "The knife you brought is starting to look a little dull.  It might be a good "+
+            "idea to find something to sharpen it with.",
+    requires : ["name"],
+    condition : function(){
+    }
+  }
 }
 
 encyclopedia.enter = {
