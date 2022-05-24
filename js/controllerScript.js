@@ -106,6 +106,31 @@ function shopping_list_item(material, numRequired){
     return numRequired+" ??? ("+material+")"+" (you have "+numHad+")";
   }
 }
+function list_buffs(buffArray){
+  let buffs = [];
+  
+  for (const stat in buffArray){
+    const bits = stat.split("_");
+    const amount = buffArray[stat];
+    let buff = "";
+    
+    if (bits[0] === "add"){
+      buff += "+"+amount;
+    } else if (bits[0] === "mult"){
+      buff += "+"+amount*100+"%";
+    }
+    
+    buff += " "+encyclopedia.stats[bits[2]].sho;
+    
+    if (bits[1] != "constant"){
+      buff += " per "+encyclopedia.stats[bits[1]];
+    }
+    
+    buffs.push(buff);
+  }
+  
+  return qms(buffs);
+}
 
 //===========================Helper functions=============================
 function objectsEqual(a, b) {
@@ -491,6 +516,15 @@ const equipmentDisplay = {
       let itemData = encyclopedia.itemData(item);
       if (!itemData) continue;
       let displayText = itemData.sho;
+      
+      if (player.data.durability[item] === 0){
+        displayText += ": broken";
+      } else if (itemData.stats){
+        let buffs = list_buffs(itemData.stats);
+        
+        displayText += ": "+buffs;
+      }
+      
       if (slot === "tool") {
         let currentDura = player.data.durability[item];
         let maxDura = itemData.durability;
@@ -513,29 +547,10 @@ const equipmentDisplay = {
       let foodData = encyclopedia.items[food];
       let foodName = foodData.sho;
       let timer = time_expression(player.data.consumed[food]/10);
-      let buffs = [];
       
-      for (const stat in foodData.edible.stats){
-        const bits = stat.split("_");
-        const amount = foodData.edible.stats[stat];
-        let buff = "";
-        
-        if (bits[0] === "add"){
-          buff += "+"+amount;
-        } else if (bits[0] === "mult"){
-          buff += "+"+amount*100+"%";
-        }
-        
-        buff += " to "+encyclopedia.stats[bits[2]].sho;
-        
-        if (bits[1] != "constant"){
-          buff += " per "+encyclopedia.stats[bits[1]]+" you have";
-        }
-        
-        buffs.push(buff);
-      }
+      let buffs = list_buffs(foodData.edible.stats);
       
-      txt += "<p>"+capitalize(foodName)+": "+qms(buffs)+" ("+timer+")</p>";
+      txt += "<p>"+capitalize(foodName)+": "+buffs+" ("+timer+")</p>";
     }
     this.display.html(txt);
   },
@@ -586,8 +601,11 @@ const log = {
       case "break": {
         let item = details.item;
         itemData = encyclopedia.itemData(item);
-        return "The edge on "+itemData.sho+" has worn down to the point where you can't use it "
-          "any more.  You'll need to find something to sharpen it with.";
+        if (item.breakMess){
+          return item.breakMess;
+        } else {
+          return "Your "+itemData.sho+" breaks!";
+        }
       }
       case "build": {
         let name = hex.getName();
@@ -858,9 +876,15 @@ const log = {
         itemData = encyclopedia.itemData(details.consumed);
         let equipData = encyclopedia.itemData(details.equip);
         
-        return "You sit down and grind away at your "+equipData.sho+" for a while with a "+
-          itemData.sho+".  When you're done, the "+equipData.sho+" is sharp enough to use "+
-          "once again.";
+        if (equipData.repairMess){
+          let repairMess = equipData.repairMess;
+          
+          repairMess = repairMess.replaceAll("$repairer$", itemData.sho);
+          
+          return repairMess;
+        } else {
+          return "You repair your "+equipData.sho+" with the "+itemData.sho+".";
+        }
       }
       case "research": {
         let research = details.research;
@@ -871,7 +895,7 @@ const log = {
           } else if (typeof research.completion === "string"){
             let completeLog = research.completion;
             
-            completeLog.replaceAll("$level$", player.data.researched[research]);
+            completeLog = completeLog.replaceAll("$level$", player.data.researched[research]);
             
             return completeLog;
           } else {

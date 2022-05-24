@@ -266,6 +266,10 @@ encyclopedia.items = {
     lon : "This is a curved knife used for gathering mushrooms.",
     stats : {add_constant_gatherSpeed : 1},
     durability : 5000,
+    breakMess : "The edge on this knife has worn down to the point where you can't use it "+
+      "any more.  You'll need to find something to sharpen it with.",
+    repairMess : "You sit down and grind away at your mushroom knife for a while with the "+
+      "$repairer$.  When you're done, the knife is sharp enough to use once again.",
   },
   blueleafHat : {
     type : "equipment-hat",
@@ -507,6 +511,19 @@ encyclopedia.crafting = {
 }
 
 encyclopedia.research = {
+  "firestarting" : {
+    desc : "How do I start fires without a lighter?",
+    materials : {
+      emptypoolcap : 1,
+      pickedblueleaf : 10,
+    },
+    building : {
+      table : 1
+    },
+    difficulty : 0,
+    timer : 10,
+    limit : 1,
+  },
   "map" : {
     desc : "Draw a map of this cave, so I can keep track of where I've explored.",
     materials : {
@@ -516,21 +533,9 @@ encyclopedia.research = {
       table : 1
     },
     difficulty : 0,
-    timer : 5,
+    timer : 10,
     limit : 1,
     completion : "Map researched. You may travel to other locations using the map in your journal."
-  },
-  "firestarting" : {
-    desc : "How do I start fires without a lighter?",
-    materials : {
-      pickedblueleaf : 10,
-    },
-    building : {
-      table : 1
-    },
-    difficulty : 0,
-    timer : 5,
-    limit : 1,
   },
 }
 
