@@ -260,6 +260,7 @@ const actionDisplay = {
     this.display = $("#actionDisplay");
     this.progressBackground = $("#progressBackground");
     this.progressBar = $("#progressBar");
+    this.hovering = null;
     this.lastUpdate = (new Date()).getTime();
   },
   redraw(force = false){
@@ -279,23 +280,37 @@ const actionDisplay = {
     }
     else {
       let details = action.details;
+      let currentAction;
+      
       switch(action.name){
         case "build":
-          txt = "You are building a "+encyclopedia.buildingData(details.thing).sho+". ";
+          currentAction = "building a "+encyclopedia.buildingData(details.thing).sho;
         break;
         case "craft":
-          txt = "You are crafting "+details.thing+". ";
+          currentAction = "crafting "+details.thing;
         break;
         case "gather":
-          txt = "You are gathering "+encyclopedia.itemData(details.thing).plu+". ";
+          currentAction = "gathering "+encyclopedia.itemData(details.thing).plu;
         break;
         case "research":
-          txt = "You are researching "+details.thing+". ";
+          currentAction = "researching "+details.thing;
         break;
         case "travel":
-          txt = "You are travelling to "+world.getHex(player.getX()+details.x, player.getY()+details.y).id+". ";
+          currentAction = "travelling to "+world.getHex(player.getX()+details.x, player.getY()+details.y).id;
         break;
       }
+      
+      //Currently the stop link only works if you double-click quickly on it.
+      //  I suspect that both clicks have to happen within one refresh window of 500 milliseconds,
+      //  but I don't know why.
+      if (this.hovering === "currentAction"){
+        let stopLink = text_click("stop", "stopAction()");
+        txt = "You are "+currentAction+" ("+stopLink+"). ";
+      } else {
+        let currentActionHover = text_hover(currentAction, "actionDisplay.hovered('currentAction')");
+        txt = "You are "+currentActionHover+". ";
+      }
+      
       const actionTimer = (action.required - action.progress) / player.data.actionSpeed;
       txt += "("+Math.ceil(actionTimer/10)+")";
       this.progressBackground.css({display:"block"});
@@ -308,6 +323,10 @@ const actionDisplay = {
       this.progressBar.css({width:progress+"%"});
     }
     this.display.html(txt);
+  },
+  hovered(item){
+    this.hovering = item;
+    this.redraw(true);
   },
 }
 
@@ -360,6 +379,9 @@ const locationDisplay = {
       let locationHover = text_hover(hexName, "locationDisplay.hovered('hex')");
       
       txt = "<p><h3>"+locationHover+"</h3></p>";
+    }
+    if (hex.desc){
+      txt += "<p>"+hex.desc+"</p>";
     }
     for (let item in inv){
       if (!inv[item]) continue;
@@ -470,8 +492,9 @@ const equipmentDisplay = {
       if (!itemData) continue;
       let displayText = itemData.sho;
       if (slot === "tool") {
-        const durability = Math.ceil(player.data.durability[item] * 100 / itemData.durability);
-        displayText += " ("+durability+"%)";
+        let currentDura = player.data.durability[item];
+        let maxDura = itemData.durability;
+        displayText += " ("+currentDura+"/"+maxDura+")";
       }
       
       //todo: make equipment align right, using spans or something
@@ -753,6 +776,11 @@ const log = {
         let thing = details.thing;
         itemData = encyclopedia.itemData(thing);
         txt = "<p>"+itemData.lon+"</p>";
+        if (player.data.durability[thing]){
+          let currentDura = player.data.durability[thing];
+          let maxDura = itemData.durability;
+          txt += "<p>Durability: "+currentDura+"/"+maxDura+"</p>";
+        }
         if (details.discovered){
           txt += "<p>You decide to name the "+itemData.bsho+" \""+itemData.sho+"\".</p>";
         }
@@ -1217,8 +1245,13 @@ function playIntro(){
   log.log("story", {chapter : "intro"})
 }
 
-function showMap() {
+function showMap(){
   popup.showMap();
+}
+
+function stopAction(){
+  player.data.action = null;
+  actionDisplay.redraw(true);
 }
 
 function zoom(str){

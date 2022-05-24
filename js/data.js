@@ -7,6 +7,7 @@ encyclopedia.items = {
     bsho : "frilly blue mushroom",
     sho : "blueleaf",
     lon : "This tall blue mushroom has a wide cap covered in little frills.  The frills spread out delicately like a poofy skirt, or possibly the canopy of a tree.  It smells refreshing.",
+    timer : 10,
   },
   poolcap : {
     type : "living-mushroom",
@@ -14,6 +15,7 @@ encyclopedia.items = {
     bsho : "bowl-shaped pink mushroom",
     sho : "poolcap",
     lon : "This flat pink mushroom has a cap shaped like a wide, shallow bowl, about the length of your arm.  A small pool of water has gathered in it.",
+    timer : 20,
   },
   silkveil : {
     type : "living-mushroom",
@@ -21,6 +23,7 @@ encyclopedia.items = {
     bsho : "veiled white mushroom",
     sho : "silkveil",
     lon : "This mushroom has fragile white veils draped loosely around its cap, cool to the touch.  Drops of dew drip off their edges into the soil below.",
+    timer : 100,
   },
   glowring : {
     type : "living-mushroom",
@@ -31,6 +34,7 @@ encyclopedia.items = {
     canGrow : function(hex){
       return hex.geothermal > 0;
     },
+    timer : 100,
   },
   stonerose : {
     type : "living-mushroom",
@@ -38,6 +42,7 @@ encyclopedia.items = {
     bsho : "tall grey mushroom",
     sho : "stonerose",
     lon : "This is a stone-grey mushroom with a long, straight stem sparsely covered in sharp thorns.  Its small cap is perched incongruously atop the stem like the head of a golf club.",
+    timer : 50,
   },
   // To do: add description
   wooltop : {
@@ -46,6 +51,7 @@ encyclopedia.items = {
     bsho : "fluffy white mushroom",
     sho : "wooltop",
     lon : "bluh.",
+    timer : 100,
   },
   holegrain : {
     type : "living-mushroom",
@@ -53,6 +59,7 @@ encyclopedia.items = {
     bsho : "holey blue mushroom",
     sho : "holegrain",
     lon : "This sky-blue mushroom has little holes all over its wide, round cap.  Like the seedpod of a lotus, hard spore grains peek out from the holes.",
+    timer : 100,
   },
   silverstack : {
     type : "living-mushroom",
@@ -60,6 +67,7 @@ encyclopedia.items = {
     bsho : "stacked silver mushroom",
     sho : "silverstack",
     lon : "This mushroom grows in piles of pale shimmering circles. The lower layers gradually die and harden into a form resembling wood.",
+    timer : 100,
   },
   cavecherry : {
     type : "living-mushroom",
@@ -67,6 +75,7 @@ encyclopedia.items = {
     bsho : "dark red mushroom",
     sho : "cavecherry",
     lon : "This is a dark red mushroom with a succulent, glossy skin.  When broken, it releases a pleasantly sweet smell.",
+    timer : 100,
   },
   zestnub : {
     type : "living-mushroom",
@@ -74,6 +83,7 @@ encyclopedia.items = {
     bsho : "tiny yellow mushroom",
     sho : "zestnub",
     lon : "This is a tiny yellow mushroom, about the size of your thumb, with a succulent, glossy skin.  The air around it is filled with a citrusy smell.",
+    timer : 100,
   },
   lightpuff : { //floating in water?
     type : "living-mushroom",
@@ -82,6 +92,7 @@ encyclopedia.items = {
     sho : "lightpuff",
     plu : "lightpuffs",
     lon : "This mushroom has a round puffy cap that glows a faint eerie green in the dark.",
+    timer : 100,
   },
   ambershine : {
     type : "living-mushroom",
@@ -89,6 +100,7 @@ encyclopedia.items = {
     bsho : "dull silver mushroom",
     sho : "ambershine",
     lon : "This mushroom is normally a dull metallic silver, but has a bright golden shine underneath when the top layer is rubbed off.  The silver layer slowly forms again as long as it's left exposed to the air.",
+    timer : 100,
   },
   fluffshroom : {
     type : "living-mushroom",
@@ -96,6 +108,7 @@ encyclopedia.items = {
     bsho : "furred pale orange mushroom",
     sho : "fluffshroom",
     lon : "This mushroom is covered with thin tufts of pale orange fluff. Instead of a cap, it has fluff sticking out in every direction from the top of its stem.",
+    timer : 100,
   },
   
   /*
@@ -251,7 +264,7 @@ encyclopedia.items = {
     sho : "mushroom knife",
     plu : "mushroom knives",
     lon : "This is a curved knife used for gathering mushrooms.",
-    stats : {add_constant_gatherSpeed : 9},
+    stats : {add_constant_gatherSpeed : 1},
     durability : 5000,
   },
   blueleafHat : {
@@ -609,6 +622,8 @@ encyclopedia.hexes = {
   // for the area. 
   h1_2 : {
     name : "Sun's Landing",
+    desc : "The most well-lit place in this huge cave.  A shaft of light falls from a hole in "+
+      "the roof far above.",
     mushrooms : {
 	  "blueleaf" : 500,
 	  "poolcap" : 1000

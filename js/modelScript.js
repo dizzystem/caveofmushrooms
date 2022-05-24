@@ -12,6 +12,7 @@ let world = {
         }
         this.hexes[i][j] = new hex('ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i]+("0"+j).slice(-2), j, i);
         this.hexes[i][j].name = data.name;
+        this.hexes[i][j].desc = data.desc;
         this.hexes[i][j].canEnter = data.canEnter;
         this.hexes[i][j].fallback = data.fallback;
         this.hexes[i][j].addMushrooms(data.mushrooms);
@@ -365,15 +366,17 @@ let player = {
     }
   },
   handleDurability : function() {
-    if (!this.data.equipment["tool"] || this.data.durability[this.data.equipment["tool"]] <= 0) {
+    let tool = this.data.equipment["tool"];
+    if (!tool || this.data.durability[tool] <= 0) {
       return;
     }
     if (this.data.action) {
       if (this.data.action.name == "gather") {
-        this.data.durability[this.data.equipment["tool"]]--;
-        if (this.data.durability[this.data.equipment["tool"]] <= 0) {
+        let tool = this.data.equipment["tool"];
+        this.data.durability[tool]--;
+        if (this.data.durability[tool] <= 0) {
           this.recalculateStats();
-          log.log("break", {item:this.data.equipment["tool"]});
+          log.log("break", {item:tool});
         }
         equipmentDisplay.redraw();
       }
@@ -519,6 +522,9 @@ let encyclopedia = {
       case "world":
         ac.look = 'look()';
         ac.build = 'build()';
+        if (player.data.researched["map"]){
+          ac.map = 'showMap()';
+        }
         break;
       case "loc":
         ac.examine = 'examine("'+where+'","'+item+'")';
@@ -542,8 +548,9 @@ let encyclopedia = {
             delete ac.drop;
             delete ac.equip;
             ac.read = 'read("journal")';
-          if (player.data.researched["map"])
-            ac.map = 'showMap()';
+            if (player.data.researched["map"]){
+              ac.map = 'showMap()';
+            }
             break;
         }
         if (itemData.edible){
@@ -610,7 +617,6 @@ function hex(id, x, y){
   this.id = id;
   this.x = x;
   this.y = y;
-  this.name = undefined;
   this.data = {
     buildings : {},
     regrowthTime : {}
@@ -636,12 +642,10 @@ function hex(id, x, y){
   }
   
   this.getName = function(){
-    if (this.name) return this.name;
+    if (this.name){
+       return this.name;
+    }
     return this.id;
-  }
-  let encyc = encyclopedia[x+"_"+y];
-  if (encyc){
-    this.name = encyc.name;
   }
   this.addBuilding = function(building){
     if (!this.data.buildings[building]){
@@ -734,12 +738,16 @@ function action(name, details){
   // Extracts the timer from the encyclopedia
   switch (name) {
     case "gather":
-      this.required *= 10;
+      let timer = encyclopedia.itemData(details.thing).timer;
+      if (!timer) {
+        timer = 30;
+      }
+      this.required *= timer;
       break;
     case "build": {
       let timer = encyclopedia.buildingData(details.thing).timer;
       if (!timer) {
-        timer = 10;
+        timer = 30;
       }
       this.required *= timer; 
       break;
@@ -752,7 +760,7 @@ function action(name, details){
         timer = buildingData.timer;
       }
       if (!timer) {
-        timer = 10;
+        timer = 30;
       }
       this.required *= timer;
       break;
@@ -765,7 +773,7 @@ function action(name, details){
         timer = buildingData.timer;
       }
       if (!timer) {
-        timer = 10;
+        timer = 30;
       }
       this.required *= timer;
       break;
